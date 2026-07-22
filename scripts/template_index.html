@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="giorno">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Narrative Porti — database arrivi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --carta:#F6F0E0; --pannello:#FDFAF1; --acqua:#CFE2E8; --terra:#EBDFB6;
+  --navy:#0E3A4C; --inchiostro:#1B2733; --secondario:#5A6B78;
+  --magenta:#B0207A; --linea:rgba(27,39,51,.16); --linea-forte:rgba(27,39,51,.32);
+  --ok:#2E6E4E; --chip-c-bg:#0E3A4C; --chip-c-fg:#F6F0E0;
+  --ombra:0 1px 2px rgba(14,58,76,.08), 0 6px 24px rgba(14,58,76,.07);
+}
+html[data-theme="notte"]{
+  --carta:#0A0E13; --pannello:#10161D; --acqua:#0E1B22; --terra:#161B14;
+  --navy:#9FB6C2; --inchiostro:#C6CDD6; --secondario:#7E8B97;
+  --magenta:#D0568F; --linea:rgba(198,205,214,.14); --linea-forte:rgba(198,205,214,.3);
+  --ok:#6FAE8C; --chip-c-bg:#22303C; --chip-c-fg:#C6CDD6;
+  --ombra:0 1px 2px rgba(0,0,0,.4), 0 6px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none !important} }
+body{
+  font-family:"IBM Plex Sans", system-ui, sans-serif;
+  background:var(--carta); color:var(--inchiostro);
+  font-size:15px; line-height:1.55;
+  background-image:radial-gradient(rgba(14,58,76,.045) 1px, transparent 1px);
+  background-size:26px 26px;
+}
+html[data-theme="notte"] body{background-image:radial-gradient(rgba(198,205,214,.03) 1px, transparent 1px)}
+a{color:var(--navy)}
+html[data-theme="notte"] a{color:#9FC2D4}
+.mono{font-family:"IBM Plex Mono", ui-monospace, monospace}
+.serif{font-family:"Instrument Serif", Georgia, serif; font-style:italic; font-weight:400}
+
+/* ---------- barra superiore ---------- */
+.topbar{
+  position:sticky; top:0; z-index:1100;
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:10px 18px; background:var(--navy); color:#F6F0E0;
+  border-bottom:3px solid var(--magenta);
+}
+html[data-theme="notte"] .topbar{background:#0D1319; color:#C6CDD6; border-bottom-color:#7A2E58}
+.brand{font-family:"IBM Plex Mono", monospace; font-weight:600; letter-spacing:.14em; font-size:14px}
+.brand small{display:block; letter-spacing:.28em; font-size:9px; opacity:.75; font-weight:400}
+.topbar .spazio{flex:1}
+.chip-ver{
+  font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em;
+  border:1px solid rgba(246,240,224,.4); border-radius:3px; padding:3px 8px;
+}
+html[data-theme="notte"] .chip-ver{border-color:rgba(198,205,214,.35)}
+.toggle-notte{
+  font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.1em;
+  background:transparent; color:inherit; border:1px solid rgba(246,240,224,.4);
+  border-radius:3px; padding:5px 10px; cursor:pointer;
+}
+html[data-theme="notte"] .toggle-notte{border-color:rgba(198,205,214,.35)}
+.toggle-notte:hover{background:rgba(255,255,255,.08)}
+:focus-visible{outline:2px solid var(--magenta); outline-offset:2px}
+
+/* ---------- layout ---------- */
+.contenitore{max-width:1460px; margin:0 auto; padding:18px}
+.griglia{display:grid; grid-template-columns:minmax(0,1fr); gap:18px}
+@media(min-width:1024px){
+  .griglia{grid-template-columns:minmax(0,1fr) minmax(420px,44%); align-items:start}
+  .colonna-mappa{position:sticky; top:76px}
+}
+
+/* ---------- mappa ---------- */
+.pannello-mappa{background:var(--pannello); border:1px solid var(--linea); border-radius:6px; overflow:hidden; box-shadow:var(--ombra)}
+#mappa{height:46vh; min-height:320px; background:var(--acqua)}
+@media(min-width:1024px){ #mappa{height:calc(100vh - 210px); min-height:520px} }
+html[data-theme="notte"] .leaflet-layer{filter:brightness(.62) contrast(1.05) saturate(.85)}
+html[data-theme="notte"] .leaflet-container{background:#0E1B22}
+.barra-mappa{display:flex; gap:8px; padding:9px 10px; border-top:1px solid var(--linea); flex-wrap:wrap; align-items:center}
+.btn-mappa{
+  font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em;
+  border:1px solid var(--linea-forte); background:transparent; color:var(--inchiostro);
+  border-radius:3px; padding:6px 11px; cursor:pointer;
+}
+.btn-mappa:hover{border-color:var(--magenta); color:var(--magenta)}
+.nota-mappa{font-size:11px; color:var(--secondario); margin-left:auto}
+.avviso-offline{padding:26px 18px; text-align:center; color:var(--secondario); font-size:13px; display:none}
+.leaflet-popup-content{font-family:"IBM Plex Mono", monospace; font-size:11.5px; line-height:1.5}
+.leaflet-popup-content b{color:var(--magenta)}
+
+/* ---------- scheda porto ---------- */
+.carta-scheda{background:var(--pannello); border:1px solid var(--linea); border-radius:6px; box-shadow:var(--ombra); overflow:hidden}
+.testata-porto{padding:20px 22px 16px; border-bottom:1px solid var(--linea); position:relative}
+.testata-porto::before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--magenta)}
+.eyebrow{font-family:"IBM Plex Mono", monospace; font-size:10px; letter-spacing:.3em; color:var(--secondario); text-transform:uppercase}
+.nome-porto{font-family:"Instrument Serif", Georgia, serif; font-style:italic; font-size:44px; line-height:1.05; color:var(--navy); margin:4px 0 2px}
+html[data-theme="notte"] .nome-porto{color:#B9CFDB}
+.sotto-porto{color:var(--secondario); font-size:13px}
+.coord-porto{font-family:"IBM Plex Mono", monospace; font-size:13px; margin-top:9px; color:var(--inchiostro)}
+.meta-scheda{display:flex; gap:14px; margin-top:10px; flex-wrap:wrap; font-family:"IBM Plex Mono", monospace; font-size:10.5px; color:var(--secondario); letter-spacing:.06em}
+
+.sezione{padding:18px 22px; border-bottom:1px solid var(--linea)}
+.sezione:last-child{border-bottom:none}
+.titolo-sezione{
+  font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--navy); margin-bottom:13px;
+  display:flex; align-items:center; gap:10px;
+}
+html[data-theme="notte"] .titolo-sezione{color:#9FB6C2}
+.titolo-sezione::after{content:""; flex:1; height:1px; background:var(--linea)}
+
+/* voci etichetta/valore */
+.voce{display:grid; grid-template-columns:150px minmax(0,1fr); gap:6px 14px; padding:8px 0; border-bottom:1px dashed var(--linea)}
+.voce:last-child{border-bottom:none}
+@media(max-width:560px){ .voce{grid-template-columns:1fr} }
+.voce .etichetta{font-size:12px; color:var(--secondario); font-weight:600; padding-top:1px}
+.voce .valore{font-size:13.5px}
+.voce .valore .nota-voce{display:block; font-size:11.5px; color:var(--secondario); margin-top:3px}
+.prov{
+  display:inline-block; vertical-align:1px; margin-left:8px;
+  font-family:"IBM Plex Mono", monospace; font-size:9px; letter-spacing:.12em;
+  border-radius:2px; padding:1.5px 6px; white-space:nowrap;
+}
+.prov.C{background:var(--chip-c-bg); color:var(--chip-c-fg)}
+.prov.W{border:1px solid var(--magenta); color:var(--magenta)}
+.prov.CW{background:var(--chip-c-bg); color:var(--chip-c-fg); border:1px solid var(--magenta)}
+.prov.P{border:1px dashed var(--linea-forte); color:var(--secondario)}
+
+/* ---------- sequenza di manovra (elemento firma) ---------- */
+.sequenza{list-style:none; position:relative; margin:4px 0 2px 6px; padding-left:26px; border-left:2px solid var(--navy)}
+html[data-theme="notte"] .sequenza{border-left-color:#3D5361}
+.passo{position:relative; padding:0 0 16px 4px}
+.passo:last-child{padding-bottom:2px}
+.passo::before{
+  content:""; position:absolute; left:-33px; top:5px; width:11px; height:11px;
+  border-radius:50%; background:var(--pannello); border:2.5px solid var(--navy);
+}
+.passo.evento::before{border-color:var(--magenta); background:var(--magenta); box-shadow:0 0 0 3px color-mix(in srgb, var(--magenta) 22%, transparent)}
+.passo .wp{font-family:"IBM Plex Mono", monospace; font-size:10px; letter-spacing:.14em; color:var(--secondario)}
+.passo .nome-passo{font-weight:600; font-size:14px}
+.passo.evento .nome-passo{color:var(--magenta)}
+.passo .azione{font-size:12.5px; color:var(--inchiostro); opacity:.9}
+.vento-box{
+  margin-top:15px; padding:9px 12px; border:1px dashed var(--linea-forte); border-radius:4px;
+  font-size:12.5px; color:var(--secondario); display:flex; gap:9px; align-items:baseline;
+}
+.vento-box .mono{color:var(--inchiostro)}
+
+/* ---------- note narrative ---------- */
+.narrativa{border-left:3px solid var(--terra); background:color-mix(in srgb, var(--terra) 26%, var(--pannello)); border-radius:0 4px 4px 0; padding:12px 14px; margin-bottom:9px; font-size:13px}
+html[data-theme="notte"] .narrativa{border-left-color:#3A4636; background:#141A15}
+.narrativa:last-child{margin-bottom:0}
+
+/* ---------- tabella waypoint ---------- */
+.scorri-x{overflow-x:auto; border:1px solid var(--linea); border-radius:4px}
+table.wp{border-collapse:collapse; width:100%; min-width:760px; font-family:"IBM Plex Mono", monospace; font-size:11px}
+table.wp th{
+  background:var(--navy); color:#F6F0E0; text-align:left; padding:7px 9px;
+  font-weight:600; letter-spacing:.06em; font-size:10px; white-space:nowrap; position:sticky; top:0;
+}
+html[data-theme="notte"] table.wp th{background:#1A242E; color:#C6CDD6}
+table.wp td{padding:6px 9px; border-bottom:1px solid var(--linea); white-space:nowrap; vertical-align:top}
+table.wp tr:nth-child(even) td{background:color-mix(in srgb, var(--navy) 4%, transparent)}
+table.wp td.nota-wp{white-space:normal; min-width:190px; color:var(--magenta); font-size:10.5px}
+table.wp tr.evidenzia td{background:color-mix(in srgb, var(--magenta) 9%, transparent)}
+.riepilogo-rotta{display:flex; gap:22px; flex-wrap:wrap; margin-bottom:13px}
+.dato-rotta .valore-grande{font-family:"IBM Plex Mono", monospace; font-size:21px; font-weight:600; color:var(--navy)}
+html[data-theme="notte"] .dato-rotta .valore-grande{color:#9FB6C2}
+.dato-rotta .etichetta-piccola{font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--secondario)}
+.nota-rotta{font-size:12.5px; padding:6px 0; border-bottom:1px dashed var(--linea)}
+.nota-rotta:last-child{border-bottom:none}
+
+/* ---------- fonti ---------- */
+.fonte{display:flex; gap:10px; align-items:baseline; padding:6px 0; border-bottom:1px dashed var(--linea); font-size:12.5px}
+.fonte:last-child{border-bottom:none}
+.fonte .data-verifica{font-family:"IBM Plex Mono", monospace; font-size:10px; color:var(--secondario); white-space:nowrap; margin-left:auto; padding-left:10px}
+
+/* ---------- footer ---------- */
+.piede{margin-top:20px; padding:15px 4px 30px; font-size:11.5px; color:var(--secondario)}
+.disclaimer{
+  border:1px solid var(--linea-forte); border-left:4px solid var(--magenta);
+  border-radius:4px; padding:11px 14px; background:var(--pannello); margin-bottom:11px;
+  font-size:12px; color:var(--inchiostro);
+}
+.timbro{font-family:"IBM Plex Mono", monospace; font-size:10px; letter-spacing:.08em}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">NARRATIVE PORTI<small>DATABASE ARRIVI · NAVIGAZIONE</small></div>
+  <div class="spazio"></div>
+  <span class="chip-ver" id="chipVersione">v—</span>
+  <button class="toggle-notte" id="toggleNotte" type="button" aria-pressed="false">PLANCIA NOTTE</button>
+</header>
+
+<div class="contenitore">
+  <div class="griglia">
+
+    <main class="colonna-scheda" id="colonnaScheda"><!-- schede generate da JS --></main>
+
+    <aside class="colonna-mappa">
+      <div class="pannello-mappa">
+        <div id="mappa" role="application" aria-label="Mappa della rotta"></div>
+        <div class="avviso-offline" id="avvisoOffline">
+          Mappa non disponibile: servono connessione internet e un browser.<br>
+          Tutti i dati della scheda restano consultabili qui sotto.
+        </div>
+        <div class="barra-mappa">
+          <button class="btn-mappa" id="btnRotta" type="button">ROTTA INTERA</button>
+          <button class="btn-mappa" id="btnBanchina" type="button">BANCHINA</button>
+          <span class="nota-mappa">Carta © OpenStreetMap · Segnalamenti © OpenSeaMap · Sat © Esri</span>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <footer class="piede">
+    <div class="disclaimer">
+      <strong>Documento di supporto alla pianificazione.</strong> Non sostituisce carte nautiche ufficiali,
+      pubblicazioni e ordinanze. Le informazioni marcate <span class="prov C">C</span> provengono dal comandante
+    (fonte di verità); quelle marcate <span class="prov W">W</span> da fonti web verificate alla data indicata.
+      Not for navigation.
+    </div>
+    <div class="timbro" id="timbro"></div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const DATA = __DATA__;
+
+/* ---------- utilità ---------- */
+function ddmToDec(txt){
+  // "60°23.469' N"  /  "005°18.369' E"
+  const m = txt.match(/(\d+)°\s*([\d.]+)'?\s*([NSEW])/i);
+  if(!m) return null;
+  let v = parseInt(m[1],10) + parseFloat(m[2])/60;
+  if(/[SW]/i.test(m[3])) v = -v;
+  return v;
+}
+const el = (tag, cls, html) => { const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; };
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const PROV_LABEL = {C:'C · COMANDANTE', W:'W · VERIFICATO', CW:'C+W · CONFERMATO', P:'IN ATTESA'};
+function chipProv(fonte, verificato){
+  const label = PROV_LABEL[fonte] || fonte;
+  const dv = (fonte==='W'||fonte==='CW') && verificato ? ` ${verificato.split('-').reverse().join('.')}` : '';
+  return `<span class="prov ${fonte}">${label}${dv}</span>`;
+}
+
+/* ---------- rendering scheda ---------- */
+function renderPorto(p, rotta){
+  const root = document.getElementById('colonnaScheda');
+  const carta = el('article','carta-scheda');
+
+  const testata = el('header','testata-porto');
+  testata.append(
+    el('div','eyebrow', `Scheda porto · ${esc(p.paese)} — ${esc(p.regione)}`),
+    el('h1','nome-porto', esc(p.nome)),
+    el('div','sotto-porto', esc(p.banchina_principale)),
+    el('div','coord-porto mono', esc(p.posizione.testo)),
+    el('div','meta-scheda', `SCHEDA v${esc(p.versione_scheda)} · AGGIORNATA ${esc(p.aggiornato)} &nbsp;·&nbsp; ROTTA ${esc(rotta.titolo)} · ${rotta.distanza_nm.toFixed(2)} NM`)
+  );
+  carta.append(testata);
+
+  /* sequenza di manovra */
+  const sez = el('section','sezione');
+  sez.append(el('h2','titolo-sezione','Sequenza di manovra — arrivo da nord'));
+  const ol = el('ol','sequenza');
+  const eventi = new Set(['velocita','manning','vts','manovra','ormeggio']);
+  p.avvicinamento.sequenza.forEach(s=>{
+    const li = el('li','passo'+(eventi.has(s.tipo)?' evento':''));
+    li.append(
+      el('div','wp', s.wp ? `WP ${String(s.wp).padStart(2,'0')}` : '— IN TRANSITO —'),
+      el('div','nome-passo', esc(s.nome)),
+      el('div','azione', esc(s.azione))
+    );
+    ol.append(li);
+  });
+  sez.append(ol);
+  sez.append(el('div','vento-box', `<span>VENTO IN APPROCCIO</span><span class="mono">${esc(p.avvicinamento.vento)}</span>`));
+  carta.append(sez);
+
+  /* sezioni dati */
+  p.sezioni.forEach(sd=>{
+    const s = el('section','sezione');
+    s.append(el('h2','titolo-sezione', esc(sd.titolo)));
+    sd.voci.forEach(v=>{
+      const r = el('div','voce');
+      const val = el('div','valore', esc(v.v) + chipProv(v.fonte, v.verificato) + (v.nota? `<span class="nota-voce">${esc(v.nota)}</span>`:''));
+      r.append(el('div','etichetta', esc(v.t)), val);
+      s.append(r);
+    });
+    carta.append(s);
+  });
+
+  /* note narrative */
+  const sn = el('section','sezione');
+  sn.append(el('h2','titolo-sezione','Note narrative del comandante'));
+  p.note_narrative.forEach(n=> sn.append(el('div','narrativa', esc(n))));
+  carta.append(sn);
+
+  /* rotta e waypoint */
+  const sr = el('section','sezione');
+  sr.append(el('h2','titolo-sezione', `Rotta ${esc(rotta.titolo)} — piano waypoint`));
+  const riep = el('div','riepilogo-rotta');
+  riep.append(
+    el('div','dato-rotta', `<div class="valore-grande">${rotta.distanza_nm.toFixed(2)}</div><div class="etichetta-piccola">Distanza NM</div>`),
+    el('div','dato-rotta', `<div class="valore-grande">${rotta.waypoints.length}</div><div class="etichetta-piccola">Waypoint</div>`),
+    el('div','dato-rotta', `<div class="valore-grande">${esc(rotta.tipo_tratte)}</div><div class="etichetta-piccola">Tratte</div>`)
+  );
+  sr.append(riep);
+  const wrap = el('div','scorri-x');
+  const tb = el('table','wp');
+  tb.innerHTML = `<thead><tr><th>N.</th><th>Nome</th><th>R [NM]</th><th>Lat</th><th>Lon</th><th>BWW°</th><th>D.Enr</th><th>Dist</th><th>Nota</th></tr></thead>`;
+  const tbody = document.createElement('tbody');
+  rotta.waypoints.forEach(w=>{
+    const tr = el('tr', w.nota ? 'evidenzia' : '');
+    tr.innerHTML = `<td>${w.n}</td><td>${esc(w.nome)}</td><td>${w.raggio_nm!=null?w.raggio_nm.toFixed(2):'—'}</td>`+
+      `<td>${esc(w.lat_txt)}</td><td>${esc(w.lon_txt)}</td>`+
+      `<td>${w.bww!=null?w.bww.toFixed(1):'—'}</td><td>${w.dist_enr!=null?w.dist_enr.toFixed(2):'—'}</td><td>${w.dist!=null?w.dist.toFixed(2):'—'}</td>`+
+      `<td class="nota-wp">${w.nota?esc(w.nota):''}</td>`;
+    tbody.append(tr);
+  });
+  tb.append(tbody); wrap.append(tb); sr.append(wrap);
+  const note = el('div',''); note.style.marginTop='13px';
+  rotta.note.forEach(n=>{
+    note.append(el('div','nota-rotta', esc(n.testo)+' '+chipProv(n.fonte, n.verificato)));
+  });
+  sr.append(note);
+  carta.append(sr);
+
+  /* fonti */
+  const sf = el('section','sezione');
+  sf.append(el('h2','titolo-sezione','Fonti — verifica del 22.07.2026'));
+  p.fonti.forEach(f=>{
+    const r = el('div','fonte');
+    r.innerHTML = `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.label)}</a><span class="data-verifica">verif. ${esc(f.verificato)}</span>`;
+    sf.append(r);
+  });
+  carta.append(sf);
+
+  root.append(carta);
+}
+
+/* ---------- mappa ---------- */
+let mappa=null, layerRaggi=null, boundsRotta=null, posBanchina=null;
+function initMappa(rotta, porto){
+  if(typeof L === 'undefined'){
+    document.getElementById('mappa').style.display='none';
+    document.getElementById('avvisoOffline').style.display='block';
+    return;
+  }
+  const punti = rotta.waypoints.map(w=>({ ...w, lat:ddmToDec(w.lat_txt), lon:ddmToDec(w.lon_txt) }));
+  const latlngs = punti.map(p=>[p.lat, p.lon]);
+
+  mappa = L.map('mappa', {zoomControl:true});
+  const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap'});
+  const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom:19, attribution:'© Esri World Imagery'});
+  const seamark = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {maxZoom:18, attribution:'© OpenSeaMap'});
+  osm.addTo(mappa); seamark.addTo(mappa);
+
+  const linea = L.polyline(latlngs, {color:'#0E3A4C', weight:2.5, opacity:.95});
+  const lineaAlone = L.polyline(latlngs, {color:'#FFFFFF', weight:6, opacity:.55});
+  lineaAlone.addTo(mappa); linea.addTo(mappa);
+
+  layerRaggi = L.layerGroup();
+  const gruppoWP = L.layerGroup().addTo(mappa);
+  punti.forEach(p=>{
+    const operativo = !!p.nota;
+    const mk = L.circleMarker([p.lat,p.lon], {
+      radius: operativo?6:4,
+      color: operativo? '#B0207A' : '#0E3A4C',
+      fillColor: operativo? '#B0207A' : '#FDFAF1',
+      fillOpacity: operativo? .95 : 1, weight:2
+    });
+    mk.bindPopup(`<b>WP ${String(p.n).padStart(2,'0')} — ${esc(p.nome)}</b><br>${esc(p.lat_txt)}<br>${esc(p.lon_txt)}`+
+      (p.bww!=null?`<br>BWW ${p.bww.toFixed(1)}° · tratta ${p.dist!=null?p.dist.toFixed(2):'—'} NM`:'')+
+      (p.nota?`<br><span style="color:#B0207A">${esc(p.nota)}</span>`:''));
+    mk.addTo(gruppoWP);
+    if(p.raggio_nm > 0){
+      L.circle([p.lat,p.lon], {radius:p.raggio_nm*1852, color:'#5A6B78', weight:1, dashArray:'4 4', fill:false, opacity:.6}).addTo(layerRaggi);
+    }
+  });
+
+  L.control.layers(
+    {'Carta':osm, 'Satellite':sat},
+    {'Segnalamenti (OpenSeaMap)':seamark, 'Raggi di guardia WP':layerRaggi},
+    {collapsed:true}
+  ).addTo(mappa);
+
+  boundsRotta = linea.getBounds().pad(0.06);
+  mappa.fitBounds(boundsRotta);
+  const fine = punti[punti.length-1];
+  posBanchina = [fine.lat, fine.lon];
+  L.marker(posBanchina).addTo(mappa).bindPopup(`<b>${esc(porto.banchina_principale)}</b><br>${esc(porto.posizione.testo)}`);
+
+  document.getElementById('btnRotta').addEventListener('click', ()=> mappa.fitBounds(boundsRotta));
+  document.getElementById('btnBanchina').addEventListener('click', ()=>{
+    if(!mappa.hasLayer(sat)){ mappa.removeLayer(osm); sat.addTo(mappa); }
+    mappa.flyTo(posBanchina, 17, {duration:1.2});
+  });
+}
+
+/* ---------- tema notte ---------- */
+document.getElementById('toggleNotte').addEventListener('click', function(){
+  const html = document.documentElement;
+  const notte = html.getAttribute('data-theme')==='notte';
+  html.setAttribute('data-theme', notte ? 'giorno' : 'notte');
+  this.setAttribute('aria-pressed', String(!notte));
+  this.textContent = notte ? 'PLANCIA NOTTE' : 'PLANCIA GIORNO';
+});
+
+/* ---------- avvio ---------- */
+(function(){
+  const porto = DATA.porti[0];
+  const rotta = DATA.rotte[0];
+  document.getElementById('chipVersione').textContent = 'v'+DATA.meta.versione;
+  document.getElementById('timbro').textContent =
+    `NARRATIVE PORTI v${DATA.meta.versione} · generato il ${DATA.meta.generato} da data/ · repo: ${DATA.meta.repo}`;
+  renderPorto(porto, rotta);
+  try{ initMappa(rotta, porto); }
+  catch(e){
+    document.getElementById('mappa').style.display='none';
+    document.getElementById('avvisoOffline').style.display='block';
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="giorno">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Narrative Porti — database arrivi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --carta:#F6F0E0; --pannello:#FDFAF1; --acqua:#CFE2E8; --terra:#EBDFB6;
+  --navy:#0E3A4C; --inchiostro:#1B2733; --secondario:#5A6B78;
+  --magenta:#B0207A; --linea:rgba(27,39,51,.16); --linea-forte:rgba(27,39,51,.32);
+  --ok:#2E6E4E; --chip-c-bg:#0E3A4C; --chip-c-fg:#F6F0E0;
+  --ombra:0 1px 2px rgba(14,58,76,.08), 0 6px 24px rgba(14,58,76,.07);
+}
+html[data-theme="notte"]{
+  --carta:#0A0E13; --pannello:#10161D; --acqua:#0E1B22; --terra:#161B14;
+  --navy:#9FB6C2; --inchiostro:#C6CDD6; --secondario:#7E8B97;
+  --magenta:#D0568F; --linea:rgba(198,205,214,.14); --linea-forte:rgba(198,205,214,.3);
+  --ok:#6FAE8C; --chip-c-bg:#22303C; --chip-c-fg:#C6CDD6;
+  --ombra:0 1px 2px rgba(0,0,0,.4), 0 6px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none !important} }
+body{
+  font-family:"IBM Plex Sans", system-ui, sans-serif;
+  background:var(--carta); color:var(--inchiostro);
+  font-size:15px; line-height:1.55;
+  background-image:radial-gradient(rgba(14,58,76,.045) 1px, transparent 1px);
+  background-size:26px 26px;
+}
+html[data-theme="notte"] body{background-image:radial-gradient(rgba(198,205,214,.03) 1px, transparent 1px)}
+a{color:var(--navy)}
+html[data-theme="notte"] a{color:#9FC2D4}
+.mono{font-family:"IBM Plex Mono", ui-monospace, monospace}
+.serif{font-family:"Instrument Serif", Georgia, serif; font-style:italic; font-weight:400}
+
+/* ---------- barra superiore ---------- */
+.topbar{
+  position:sticky; top:0; z-index:1100;
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:10px 18px; background:var(--navy); color:#F6F0E0;
+  border-bottom:3px solid var(--magenta);
+}
+html[data-theme="notte"] .topbar{background:#0D1319; color:#C6CDD6; border-bottom-color:#7A2E58}
+.brand{font-family:"IBM Plex Mono", monospace; font-weight:600; letter-spacing:.14em; font-size:14px}
+.brand small{display:block; letter-spacing:.28em; font-size:9px; opacity:.75; font-weight:400}
+.topbar .spazio{flex:1}
+.chip-ver{
+  font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em;
+  border:1px solid rgba(246,240,224,.4); border-radius:3px; padding:3px 8px;
+}
+html[data-theme="notte"] .chip-ver{border-color:rgba(198,205,214,.35)}
+.toggle-notte{
+  font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.1em;
+  background:transparent; color:inherit; border:1px solid rgba(246,240,224,.4);
+  border-radius:3px; padding:5px 10px; cursor:pointer;
+}
+html[data-theme="notte"] .toggle-notte{border-color:rgba(198,205,214,.35)}
+.toggle-notte:hover{background:rgba(255,255,255,.08)}
+:focus-visible{outline:2px solid var(--magenta); outline-offset:2px}
+
+/* ---------- layout ---------- */
+.contenitore{max-width:1460px; margin:0 auto; padding:18px}
+.griglia{display:grid; grid-template-columns:minmax(0,1fr); gap:18px}
+@media(min-width:1024px){
+  .griglia{grid-template-columns:minmax(0,1fr) minmax(420px,44%); align-items:start}
+  .colonna-mappa{position:sticky; top:76px}
+}
+
+/* ---------- mappa ---------- */
+.pannello-mappa{background:var(--pannello); border:1px solid var(--linea); border-radius:6px; overflow:hidden; box-shadow:var(--ombra)}
+#mappa{height:46vh; min-height:320px; background:var(--acqua)}
+@media(min-width:1024px){ #mappa{height:calc(100vh - 210px); min-height:520px} }
+html[data-theme="notte"] .leaflet-layer{filter:brightness(.62) contrast(1.05) saturate(.85)}
+html[data-theme="notte"] .leaflet-container{background:#0E1B22}
+.barra-mappa{display:flex; gap:8px; padding:9px 10px; border-top:1px solid var(--linea); flex-wrap:wrap; align-items:center}
+.btn-mappa{
+  font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em;
+  border:1px solid var(--linea-forte); background:transparent; color:var(--inchiostro);
+  border-radius:3px; padding:6px 11px; cursor:pointer;
+}
+.btn-mappa:hover{border-color:var(--magenta); color:var(--magenta)}
+.nota-mappa{font-size:11px; color:var(--secondario); margin-left:auto}
+.avviso-offline{padding:26px 18px; text-align:center; color:var(--secondario); font-size:13px; display:none}
+.leaflet-popup-content{font-family:"IBM Plex Mono", monospace; font-size:11.5px; line-height:1.5}
+.leaflet-popup-content b{color:var(--magenta)}
+
+/* ---------- scheda porto ---------- */
+.carta-scheda{background:var(--pannello); border:1px solid var(--linea); border-radius:6px; box-shadow:var(--ombra); overflow:hidden}
+.testata-porto{padding:20px 22px 16px; border-bottom:1px solid var(--linea); position:relative}
+.testata-porto::before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--magenta)}
+.eyebrow{font-family:"IBM Plex Mono", monospace; font-size:10px; letter-spacing:.3em; color:var(--secondario); text-transform:uppercase}
+.nome-porto{font-family:"Instrument Serif", Georgia, serif; font-style:italic; font-size:44px; line-height:1.05; color:var(--navy); margin:4px 0 2px}
+html[data-theme="notte"] .nome-porto{color:#B9CFDB}
+.sotto-porto{color:var(--secondario); font-size:13px}
+.coord-porto{font-family:"IBM Plex Mono", monospace; font-size:13px; margin-top:9px; color:var(--inchiostro)}
+.meta-scheda{display:flex; gap:14px; margin-top:10px; flex-wrap:wrap; font-family:"IBM Plex Mono", monospace; font-size:10.5px; color:var(--secondario); letter-spacing:.06em}
+
+.sezione{padding:18px 22px; border-bottom:1px solid var(--linea)}
+.sezione:last-child{border-bottom:none}
+.titolo-sezione{
+  font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--navy); margin-bottom:13px;
+  display:flex; align-items:center; gap:10px;
+}
+html[data-theme="notte"] .titolo-sezione{color:#9FB6C2}
+.titolo-sezione::after{content:""; flex:1; height:1px; background:var(--linea)}
+
+/* voci etichetta/valore */
+.voce{display:grid; grid-template-columns:150px minmax(0,1fr); gap:6px 14px; padding:8px 0; border-bottom:1px dashed var(--linea)}
+.voce:last-child{border-bottom:none}
+@media(max-width:560px){ .voce{grid-template-columns:1fr} }
+.voce .etichetta{font-size:12px; color:var(--secondario); font-weight:600; padding-top:1px}
+.voce .valore{font-size:13.5px}
+.voce .valore .nota-voce{display:block; font-size:11.5px; color:var(--secondario); margin-top:3px}
+.prov{
+  display:inline-block; vertical-align:1px; margin-left:8px;
+  font-family:"IBM Plex Mono", monospace; font-size:9px; letter-spacing:.12em;
+  border-radius:2px; padding:1.5px 6px; white-space:nowrap;
+}
+.prov.C{background:var(--chip-c-bg); color:var(--chip-c-fg)}
+.prov.W{border:1px solid var(--magenta); color:var(--magenta)}
+.prov.CW{background:var(--chip-c-bg); color:var(--chip-c-fg); border:1px solid var(--magenta)}
+.prov.P{border:1px dashed var(--linea-forte); color:var(--secondario)}
+
+/* ---------- sequenza di manovra (elemento firma) ---------- */
+.sequenza{list-style:none; position:relative; margin:4px 0 2px 6px; padding-left:26px; border-left:2px solid var(--navy)}
+html[data-theme="notte"] .sequenza{border-left-color:#3D5361}
+.passo{position:relative; padding:0 0 16px 4px}
+.passo:last-child{padding-bottom:2px}
+.passo::before{
+  content:""; position:absolute; left:-33px; top:5px; width:11px; height:11px;
+  border-radius:50%; background:var(--pannello); border:2.5px solid var(--navy);
+}
+.passo.evento::before{border-color:var(--magenta); background:var(--magenta); box-shadow:0 0 0 3px color-mix(in srgb, var(--magenta) 22%, transparent)}
+.passo .wp{font-family:"IBM Plex Mono", monospace; font-size:10px; letter-spacing:.14em; color:var(--secondario)}
+.passo .nome-passo{font-weight:600; font-size:14px}
+.passo.evento .nome-passo{color:var(--magenta)}
+.passo .azione{font-size:12.5px; color:var(--inchiostro); opacity:.9}
+.vento-box{
+  margin-top:15px; padding:9px 12px; border:1px dashed var(--linea-forte); border-radius:4px;
+  font-size:12.5px; color:var(--secondario); display:flex; gap:9px; align-items:baseline;
+}
+.vento-box .mono{color:var(--inchiostro)}
+
+/* ---------- note narrative ---------- */
+.narrativa{border-left:3px solid var(--terra); background:color-mix(in srgb, var(--terra) 26%, var(--pannello)); border-radius:0 4px 4px 0; padding:12px 14px; margin-bottom:9px; font-size:13px}
+html[data-theme="notte"] .narrativa{border-left-color:#3A4636; background:#141A15}
+.narrativa:last-child{margin-bottom:0}
+
+/* ---------- tabella waypoint ---------- */
+.scorri-x{overflow-x:auto; border:1px solid var(--linea); border-radius:4px}
+table.wp{border-collapse:collapse; width:100%; min-width:760px; font-family:"IBM Plex Mono", monospace; font-size:11px}
+table.wp th{
+  background:var(--navy); color:#F6F0E0; text-align:left; padding:7px 9px;
+  font-weight:600; letter-spacing:.06em; font-size:10px; white-space:nowrap; position:sticky; top:0;
+}
+html[data-theme="notte"] table.wp th{background:#1A242E; color:#C6CDD6}
+table.wp td{padding:6px 9px; border-bottom:1px solid var(--linea); white-space:nowrap; vertical-align:top}
+table.wp tr:nth-child(even) td{background:color-mix(in srgb, var(--navy) 4%, transparent)}
+table.wp td.nota-wp{white-space:normal; min-width:190px; color:var(--magenta); font-size:10.5px}
+table.wp tr.evidenzia td{background:color-mix(in srgb, var(--magenta) 9%, transparent)}
+.riepilogo-rotta{display:flex; gap:22px; flex-wrap:wrap; margin-bottom:13px}
+.dato-rotta .valore-grande{font-family:"IBM Plex Mono", monospace; font-size:21px; font-weight:600; color:var(--navy)}
+html[data-theme="notte"] .dato-rotta .valore-grande{color:#9FB6C2}
+.dato-rotta .etichetta-piccola{font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--secondario)}
+.nota-rotta{font-size:12.5px; padding:6px 0; border-bottom:1px dashed var(--linea)}
+.nota-rotta:last-child{border-bottom:none}
+
+/* ---------- fonti ---------- */
+.fonte{display:flex; gap:10px; align-items:baseline; padding:6px 0; border-bottom:1px dashed var(--linea); font-size:12.5px}
+.fonte:last-child{border-bottom:none}
+.fonte .data-verifica{font-family:"IBM Plex Mono", monospace; font-size:10px; color:var(--secondario); white-space:nowrap; margin-left:auto; padding-left:10px}
+
+/* ---------- footer ---------- */
+.piede{margin-top:20px; padding:15px 4px 30px; font-size:11.5px; color:var(--secondario)}
+.disclaimer{
+  border:1px solid var(--linea-forte); border-left:4px solid var(--magenta);
+  border-radius:4px; padding:11px 14px; background:var(--pannello); margin-bottom:11px;
+  font-size:12px; color:var(--inchiostro);
+}
+.timbro{font-family:"IBM Plex Mono", monospace; font-size:10px; letter-spacing:.08em}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">NARRATIVE PORTI<small>DATABASE ARRIVI · NAVIGAZIONE</small></div>
+  <div class="spazio"></div>
+  <span class="chip-ver" id="chipVersione">v—</span>
+  <button class="toggle-notte" id="toggleNotte" type="button" aria-pressed="false">PLANCIA NOTTE</button>
+</header>
+
+<div class="contenitore">
+  <div class="griglia">
+
+    <main class="colonna-scheda" id="colonnaScheda"><!-- schede generate da JS --></main>
+
+    <aside class="colonna-mappa">
+      <div class="pannello-mappa">
+        <div id="mappa" role="application" aria-label="Mappa della rotta"></div>
+        <div class="avviso-offline" id="avvisoOffline">
+          Mappa non disponibile: servono connessione internet e un browser.<br>
+          Tutti i dati della scheda restano consultabili qui sotto.
+        </div>
+        <div class="barra-mappa">
+          <button class="btn-mappa" id="btnRotta" type="button">ROTTA INTERA</button>
+          <button class="btn-mappa" id="btnBanchina" type="button">BANCHINA</button>
+          <span class="nota-mappa">Carta © OpenStreetMap · Segnalamenti © OpenSeaMap · Sat © Esri</span>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <footer class="piede">
+    <div class="disclaimer">
+      <strong>Documento di supporto alla pianificazione.</strong> Non sostituisce carte nautiche ufficiali,
+      pubblicazioni e ordinanze. Le informazioni marcate <span class="prov C">C</span> provengono dal comandante
+    (fonte di verità); quelle marcate <span class="prov W">W</span> da fonti web verificate alla data indicata.
+      Not for navigation.
+    </div>
+    <div class="timbro" id="timbro"></div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const DATA = {"meta": {"versione": "1.0", "generato": "22.07.2026", "repo": "github.com/wavyforseafarers/Narrative-Porti"}, "porti": [{"id": "haugesund", "nome": "Haugesund", "paese": "Norvegia", "regione": "Rogaland", "banchina_principale": "Garpeskjærskaien — Haugesund Cruise Port", "posizione": {"testo": "59°24.691' N | 005°15.309' E", "lat": 59.411517, "lon": 5.25515}, "sezioni": [{"titolo": "Generalità e contatti", "voci": [{"t": "Autorità portuale", "v": "Karmsund Havn IKS", "fonte": "W", "verificato": "2026-07-22"}, {"t": "Port control / Havnevakt", "v": "VHF ch 12 e 16 (ascolto continuo) · tel +47 52 70 37 50 (24/7) · havnevakt@karmsund-havn.no", "fonte": "CW", "nota": "Canale di lavoro del porto CH 12 indicato dal comandante e confermato dal sito ufficiale", "verificato": "2026-07-22"}, {"t": "Banchina", "v": "Garpeskjærskaien, lato ovest dell'isola di Risøy, all'ingresso nord di Haugesund · designazione portuale 3-0522 (G-kai2)", "fonte": "W", "verificato": "2026-07-22"}, {"t": "VTS", "v": "Kvitsøy VTS — area Nord, VHF ch 19 · tel +47 51 73 60 33 · ingresso in area ≈ WP18 (4 NM IN). Obbligo di ascolto continuo sul canale VTS e clearance prima di utilizzare l'area.", "fonte": "CW", "verificato": "2026-07-22"}, {"t": "Pilotaggio", "v": "Kvitsøy Pilot Dispatch Centre — VHF ch 13/16 · tel +47 51 73 53 97", "fonte": "W", "verificato": "2026-07-22"}, {"t": "Richiesta accosto", "v": "Tramite SafeSeaNet (shiprep.no) per navi ≥ 300 GT; informazioni supplementari pre-arrivo alla Havnevakt", "fonte": "W", "verificato": "2026-07-22"}]}, {"titolo": "Dati nautici e banchina", "voci": [{"t": "Lunghezza banchina", "v": "297 m — riceve le navi da crociera di maggiori dimensioni; di norma una sola nave alla volta", "fonte": "W", "verificato": "2026-07-22"}, {"t": "Fondale in banchina", "v": "Dato ufficiale non pubblicato online in formato testuale. Riferimento: carta ufficiale della banchina, Karmsund Havn (nov 2024) — link in Fonti.", "fonte": "P"}, {"t": "ISPS", "v": "Terminal conforme ISPS, approvato dalla Norwegian Coastal Administration", "fonte": "W", "verificato": "2026-07-22"}, {"t": "Shore power", "v": "Disponibile: sistema mobile ad alta tensione fino a 16 MVA (Havnekraft / Zinus «Shore Power Cruiser»)", "fonte": "W", "verificato": "2026-07-22"}, {"t": "Ormeggio", "v": "Prua e poppa, configurazione cavi 7/2", "fonte": "C"}, {"t": "Strumenti live del porto", "v": "Anemometro in banchina e misuratore di corrente di marea nel Karmsundet, pubblicati da Karmsund Havn — link in Fonti", "fonte": "W", "verificato": "2026-07-22"}, {"t": "Maree", "v": "Riferimento ufficiale: Kartverket «Se havnivå» (tavole e previsioni per qualsiasi punto della costa norvegese)", "fonte": "W", "verificato": "2026-07-22"}]}, {"titolo": "Combustibile e ambiente", "voci": [{"t": "Environmental limitations", "v": "Nessuna sulla rotta e per l'ingresso", "fonte": "C"}, {"t": "Ingresso", "v": "Consentito sia con AAQS sia con MGO", "fonte": "C"}, {"t": "Manovra", "v": "AAQS consentito durante la manovra", "fonte": "C"}, {"t": "In banchina", "v": "Passaggio immediato a MGO con SCR, oppure shore power connection", "fonte": "C"}]}], "avvicinamento": {"vento": "In approccio vento da NNW 25–30 kn (esperienza diretta)", "sequenza": [{"wp": 18, "nome": "4 NM IN", "azione": "Ingresso nell'area di competenza Kvitsøy VTS — VHF ch 19", "tipo": "vts"}, {"wp": 19, "nome": "Haugesund Port Limit", "azione": "Limite delle acque portuali", "tipo": "limite"}, {"wp": 20, "nome": "Grunnane", "azione": "Riduzione di velocità da 11 a 7 kn", "tipo": "velocita"}, {"wp": 21, "nome": "SBE / Red Manning", "azione": "Stand By Engines — red manning", "tipo": "manning"}, {"wp": 22, "nome": "Boa rossa Kråkeflua", "azione": "Al traverso della boa si entra nella canaletta stretta — speed limit 8 kn", "tipo": "velocita"}, {"wp": 23, "nome": "Galven", "azione": "Punto di rotta nella canaletta", "tipo": "punto"}, {"wp": 24, "nome": "Galten", "azione": "Ultimo punto prima dell'accostata finale", "tipo": "punto"}, {"wp": null, "nome": "Traverso Møllerodden", "azione": "Ampia accostata a sinistra — ROT oltre 30°/min", "tipo": "manovra"}, {"wp": 25, "nome": "Garpeskjærskaien", "azione": "Ormeggio prua e poppa, configurazione 7/2", "tipo": "ormeggio"}]}, "note_narrative": ["Guardia presa alle 04:00 con velocità richiesta di 11.3 kn — velocità richiesta bassa.", "Environmental limitations nessuna: possiamo entrare sia con AAQS sia con MGO; l'importante è cambiare a MGO o shore connection una volta in banchina.", "Circa al waypoint 18, entrata nell'area di competenza Kvitsøy VTS su canale VHF 19.", "Al waypoint 20 circa, riduzione da 11 a 7 nodi.", "In approccio vento da NNW 25/30 nodi; al traverso della boa rossa Kråkeflua si entra nella canaletta stretta con speed limit di 8 nodi.", "Al traverso di Møllerodden ampia accostata a sinistra con ROT oltre i 30 gradi al minuto.", "Canali del porto VHF CH 12. AAQS consentito durante la manovra; subito dopo passaggio ad MGO con SCR o in alternativa shore power connection. Ormeggio banchina Haugesund Cruise Port 7/2 prua e poppa."], "fonti": [{"label": "Karmsund Havn — Haugesund Cruise Port (banchina 297 m, ISPS)", "url": "https://karmsundhavn.no/en/business-areas/garpaskjaer/", "verificato": "2026-07-22"}, {"label": "Karmsund Havn — Contatti / Havnevakt (VHF 12 e 16, tel 24/7)", "url": "https://karmsundhavn.no/en/contact/", "verificato": "2026-07-22"}, {"label": "Karmsund Havn — Anløp (SafeSeaNet, designazioni banchine)", "url": "https://karmsundhavn.no/maritimt/anlop/", "verificato": "2026-07-22"}, {"label": "Karmsund Havn — Carta ufficiale banchina Garpeskjærskaien (nov 2024)", "url": "https://karmsundhavn.no/wp-content/uploads/2024/11/Garpaskjaerskaien-Chart-details-new-scaled.jpg", "verificato": "2026-07-22"}, {"label": "Karmsund Havn — Anemometro in banchina", "url": "https://karmsundhavn.no/maritimt/vindmaler/", "verificato": "2026-07-22"}, {"label": "Karmsund Havn — Corrente di marea Karmsundet", "url": "https://karmsundhavn.no/maritimt/tidevannsstrom/", "verificato": "2026-07-22"}, {"label": "Kystverket — Centri VTS (Kvitsøy VTS ch 19 Nord / 18 Sud; Fedje VTS ch 80 Nord / 71 Sud)", "url": "https://www.kystverket.no/en/contact/vts-service/", "verificato": "2026-07-22"}, {"label": "Kystverket — Obblighi delle navi nelle aree VTS", "url": "https://www.kystverket.no/en/navigation-and-monitoring/vts---vessel-traffic-service/requirements-for-vessels-operating-in-vts-areas/", "verificato": "2026-07-22"}, {"label": "Kartverket — Se havnivå (maree e livello del mare)", "url": "https://www.kartverket.no/en/at-sea/se-havniva/tides-and-water-level", "verificato": "2026-07-22"}, {"label": "Havnekraft/Zinus — Shore power Garpeskjærskaien (16 MVA)", "url": "https://www.cruisemapper.com/ports/haugesund-port-239", "verificato": "2026-07-22"}], "versione_scheda": "1.0", "aggiornato": "2026-07-22"}], "rotte": [{"id": "bergen_haugesund", "da": "Bergen", "a": "Haugesund", "titolo": "Bergen → Haugesund", "distanza_nm": 132.61, "tipo_tratte": "RL", "waypoints": [{"n": 1, "nome": "PIER", "raggio_nm": 1.0, "lat_txt": "60°23.469' N", "lon_txt": "005°18.369' E", "bww": null, "dist_enr": null, "dist": null, "sail": null, "lat": 60.39115, "lon": 5.30615}, {"n": 2, "nome": "TURNING BASIN", "raggio_nm": 0.25, "lat_txt": "60°23.550' N", "lon_txt": "005°17.989' E", "bww": 293.2, "dist_enr": 0.2, "dist": 0.2, "sail": "RL", "lat": 60.3925, "lon": 5.299816666666667}, {"n": 3, "nome": "FAOP/THRUSTERS OFF/YELLOW MANNING", "raggio_nm": 1.0, "lat_txt": "60°24.287' N", "lon_txt": "005°14.589' E", "bww": 293.7, "dist_enr": 1.49, "dist": 1.28, "sail": "RL", "lat": 60.404783333333334, "lon": 5.24315}, {"n": 4, "nome": "BRIDGE", "raggio_nm": 0.0, "lat_txt": "60°23.643' N", "lon_txt": "005°12.716' E", "bww": 235.2, "dist_enr": 3.08, "dist": 1.59, "sail": "RL", "nota": "Askøybrua — luce verticale 62 m", "lat": 60.39405, "lon": 5.2119333333333335}, {"n": 5, "nome": "RENNEDALEN", "raggio_nm": 0.5, "lat_txt": "60°22.833' N", "lon_txt": "005°10.366' E", "bww": 235.2, "dist_enr": 3.9, "dist": 0.82, "sail": "RL", "lat": 60.38055, "lon": 5.172766666666667}, {"n": 6, "nome": "Byfjorden", "raggio_nm": 0.8, "lat_txt": "60°23.760' N", "lon_txt": "005°08.947' E", "bww": 322.8, "dist_enr": 5.11, "dist": 1.21, "sail": "RL", "lat": 60.396, "lon": 5.149116666666667}, {"n": 7, "nome": "little", "raggio_nm": 0.8, "lat_txt": "60°24.077' N", "lon_txt": "005°07.341' E", "bww": 291.8, "dist_enr": 6.14, "dist": 1.04, "sail": "RL", "lat": 60.40128333333333, "lon": 5.12235}, {"n": 8, "nome": "Sora", "raggio_nm": 2.0, "lat_txt": "60°24.981' N", "lon_txt": "005°04.224' E", "bww": 300.4, "dist_enr": 7.83, "dist": 1.69, "sail": "RL", "lat": 60.41635, "lon": 5.0704}, {"n": 9, "nome": "Ramsoygrunnen", "raggio_nm": 2.0, "lat_txt": "60°25.789' N", "lon_txt": "005°02.138' E", "bww": 308.0, "dist_enr": 8.75, "dist": 0.92, "sail": "RL", "lat": 60.42981666666667, "lon": 5.035633333333333}, {"n": 10, "nome": "GJONA", "raggio_nm": 4.0, "lat_txt": "60°31.227' N", "lon_txt": "004°57.248' E", "bww": 336.1, "dist_enr": 14.79, "dist": 6.03, "sail": "RL", "lat": 60.52045, "lon": 4.954133333333333}, {"n": 11, "nome": "Ljosoyskallen", "raggio_nm": 4.0, "lat_txt": "60°32.971' N", "lon_txt": "004°54.740' E", "bww": 324.7, "dist_enr": 16.39, "dist": 1.6, "sail": "RL", "lat": 60.54951666666667, "lon": 4.912333333333334}, {"n": 12, "nome": "Mangersfjorden", "raggio_nm": 4.0, "lat_txt": "60°39.056' N", "lon_txt": "004°52.770' E", "bww": 351.0, "dist_enr": 22.35, "dist": 5.97, "sail": "RL", "lat": 60.650933333333334, "lon": 4.8795}, {"n": 13, "nome": "POFF FEDJE", "raggio_nm": 2.0, "lat_txt": "60°44.415' N", "lon_txt": "004°43.546' E", "bww": 319.8, "dist_enr": 29.63, "dist": 7.28, "sail": "RL", "nota": "Sbarco pilota (Pilot Off) — Fedje", "lat": 60.74025, "lon": 4.725766666666667}, {"n": 14, "nome": "TSS OUT", "raggio_nm": 3.0, "lat_txt": "60°44.696' N", "lon_txt": "004°37.017' E", "bww": 275.0, "dist_enr": 32.48, "dist": 2.84, "sail": "RL", "nota": "Uscita dallo schema di separazione del traffico al largo di Fedje", "lat": 60.744933333333336, "lon": 4.61695}, {"n": 15, "nome": "4 NMS OUT", "raggio_nm": 0.0, "lat_txt": "60°42.552' N", "lon_txt": "004°30.875' E", "bww": 234.5, "dist_enr": 37.37, "dist": 4.89, "sail": "RL", "lat": 60.7092, "lon": 4.514583333333333}, {"n": 16, "nome": "12 NM OUT", "raggio_nm": 4.0, "lat_txt": "60°36.538' N", "lon_txt": "004°13.675' E", "bww": 234.5, "dist_enr": 45.09, "dist": 7.72, "sail": "RL", "nota": "Fuori dalle 12 NM — inizio gamba esterna verso sud", "lat": 60.60896666666667, "lon": 4.227916666666666}, {"n": 17, "nome": "12 NM IN", "raggio_nm": 4.0, "lat_txt": "59°36.413' N", "lon_txt": "004°34.167' E", "bww": 170.3, "dist_enr": 106.2, "dist": 61.12, "sail": "RL", "nota": "Rientro entro le 12 NM", "lat": 59.606883333333336, "lon": 4.56945}, {"n": 18, "nome": "4 NMS IN", "raggio_nm": 0.0, "lat_txt": "59°32.103' N", "lon_txt": "004°50.785' E", "bww": 117.1, "dist_enr": 117.58, "dist": 11.38, "sail": "RL", "nota": "≈ ingresso area Kvitsøy VTS — VHF ch 19", "lat": 59.53505, "lon": 4.846416666666666}, {"n": 19, "nome": "HAUGESUND PORT LIMIT", "raggio_nm": 0.0, "lat_txt": "59°30.301' N", "lon_txt": "004°57.725' E", "bww": 117.1, "dist_enr": 121.55, "dist": 3.97, "sail": "RL", "lat": 59.50501666666667, "lon": 4.962083333333333}, {"n": 20, "nome": "GRUNNANE", "raggio_nm": 0.0, "lat_txt": "59°27.380' N", "lon_txt": "005°08.958' E", "bww": 117.1, "dist_enr": 127.99, "dist": 6.43, "sail": "RL", "nota": "Riduzione velocità 11 → 7 kn", "lat": 59.45633333333333, "lon": 5.1493}, {"n": 21, "nome": "SBE/RED MANNING", "raggio_nm": 2.0, "lat_txt": "59°26.682' N", "lon_txt": "005°11.640' E", "bww": 117.1, "dist_enr": 129.13, "dist": 1.15, "sail": "RL", "nota": "Stand By Engines — red manning", "lat": 59.4447, "lon": 5.194}, {"n": 22, "nome": "BY KRAKEFLU BUOY", "raggio_nm": 1.0, "lat_txt": "59°25.553' N", "lon_txt": "005°13.547' E", "bww": 139.3, "dist_enr": 130.92, "dist": 1.79, "sail": "RL", "nota": "Boa rossa Kråkeflua — ingresso canaletta, speed limit 8 kn", "lat": 59.42588333333333, "lon": 5.225783333333333}, {"n": 23, "nome": "GALVEN", "raggio_nm": 1.0, "lat_txt": "59°24.777' N", "lon_txt": "005°14.442' E", "bww": 149.6, "dist_enr": 131.74, "dist": 0.82, "sail": "RL", "lat": 59.41295, "lon": 5.2407}, {"n": 24, "nome": "GALTEN", "raggio_nm": 0.1, "lat_txt": "59°24.319' N", "lon_txt": "005°15.524' E", "bww": 129.7, "dist_enr": 132.3, "dist": 0.56, "sail": "RL", "nota": "Al traverso di Møllerodden: ampia accostata a sinistra, ROT > 30°/min", "lat": 59.405316666666664, "lon": 5.258733333333334}, {"n": 25, "nome": "GARPESKJAERKAIEN PIER", "raggio_nm": 0.0, "lat_txt": "59°24.691' N", "lon_txt": "005°15.309' E", "bww": 343.6, "dist_enr": 132.61, "dist": 0.31, "sail": "RL", "nota": "Ormeggio Garpeskjærskaien — prua e poppa, 7/2", "lat": 59.411516666666664, "lon": 5.25515}], "note": [{"testo": "Guardia presa alle 04:00 con velocità richiesta di 11.3 kn (richiesta bassa).", "fonte": "C"}, {"testo": "Nessuna environmental limitation sulla rotta: transito consentito sia con AAQS sia con MGO.", "fonte": "C"}, {"testo": "Segmento Bergen–Fedje all'interno dell'area Fedje VTS — area Nord VHF ch 80.", "fonte": "W", "verificato": "2026-07-22"}, {"testo": "Askøybrua (WP4): ponte sospeso sul Byfjorden, luce verticale 62 m, campata principale 850 m.", "fonte": "W", "verificato": "2026-07-22"}, {"testo": "Da ≈ WP18 (4 NM IN): area Kvitsøy VTS — area Nord VHF ch 19, ascolto continuo e clearance richiesta.", "fonte": "CW", "verificato": "2026-07-22"}]}]};
+
+/* ---------- utilità ---------- */
+function ddmToDec(txt){
+  // "60°23.469' N"  /  "005°18.369' E"
+  const m = txt.match(/(\d+)°\s*([\d.]+)'?\s*([NSEW])/i);
+  if(!m) return null;
+  let v = parseInt(m[1],10) + parseFloat(m[2])/60;
+  if(/[SW]/i.test(m[3])) v = -v;
+  return v;
+}
+const el = (tag, cls, html) => { const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; };
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const PROV_LABEL = {C:'C · COMANDANTE', W:'W · VERIFICATO', CW:'C+W · CONFERMATO', P:'IN ATTESA'};
+function chipProv(fonte, verificato){
+  const label = PROV_LABEL[fonte] || fonte;
+  const dv = (fonte==='W'||fonte==='CW') && verificato ? ` ${verificato.split('-').reverse().join('.')}` : '';
+  return `<span class="prov ${fonte}">${label}${dv}</span>`;
+}
+
+/* ---------- rendering scheda ---------- */
+function renderPorto(p, rotta){
+  const root = document.getElementById('colonnaScheda');
+  const carta = el('article','carta-scheda');
+
+  const testata = el('header','testata-porto');
+  testata.append(
+    el('div','eyebrow', `Scheda porto · ${esc(p.paese)} — ${esc(p.regione)}`),
+    el('h1','nome-porto', esc(p.nome)),
+    el('div','sotto-porto', esc(p.banchina_principale)),
+    el('div','coord-porto mono', esc(p.posizione.testo)),
+    el('div','meta-scheda', `SCHEDA v${esc(p.versione_scheda)} · AGGIORNATA ${esc(p.aggiornato)} &nbsp;·&nbsp; ROTTA ${esc(rotta.titolo)} · ${rotta.distanza_nm.toFixed(2)} NM`)
+  );
+  carta.append(testata);
+
+  /* sequenza di manovra */
+  const sez = el('section','sezione');
+  sez.append(el('h2','titolo-sezione','Sequenza di manovra — arrivo da nord'));
+  const ol = el('ol','sequenza');
+  const eventi = new Set(['velocita','manning','vts','manovra','ormeggio']);
+  p.avvicinamento.sequenza.forEach(s=>{
+    const li = el('li','passo'+(eventi.has(s.tipo)?' evento':''));
+    li.append(
+      el('div','wp', s.wp ? `WP ${String(s.wp).padStart(2,'0')}` : '— IN TRANSITO —'),
+      el('div','nome-passo', esc(s.nome)),
+      el('div','azione', esc(s.azione))
+    );
+    ol.append(li);
+  });
+  sez.append(ol);
+  sez.append(el('div','vento-box', `<span>VENTO IN APPROCCIO</span><span class="mono">${esc(p.avvicinamento.vento)}</span>`));
+  carta.append(sez);
+
+  /* sezioni dati */
+  p.sezioni.forEach(sd=>{
+    const s = el('section','sezione');
+    s.append(el('h2','titolo-sezione', esc(sd.titolo)));
+    sd.voci.forEach(v=>{
+      const r = el('div','voce');
+      const val = el('div','valore', esc(v.v) + chipProv(v.fonte, v.verificato) + (v.nota? `<span class="nota-voce">${esc(v.nota)}</span>`:''));
+      r.append(el('div','etichetta', esc(v.t)), val);
+      s.append(r);
+    });
+    carta.append(s);
+  });
+
+  /* note narrative */
+  const sn = el('section','sezione');
+  sn.append(el('h2','titolo-sezione','Note narrative del comandante'));
+  p.note_narrative.forEach(n=> sn.append(el('div','narrativa', esc(n))));
+  carta.append(sn);
+
+  /* rotta e waypoint */
+  const sr = el('section','sezione');
+  sr.append(el('h2','titolo-sezione', `Rotta ${esc(rotta.titolo)} — piano waypoint`));
+  const riep = el('div','riepilogo-rotta');
+  riep.append(
+    el('div','dato-rotta', `<div class="valore-grande">${rotta.distanza_nm.toFixed(2)}</div><div class="etichetta-piccola">Distanza NM</div>`),
+    el('div','dato-rotta', `<div class="valore-grande">${rotta.waypoints.length}</div><div class="etichetta-piccola">Waypoint</div>`),
+    el('div','dato-rotta', `<div class="valore-grande">${esc(rotta.tipo_tratte)}</div><div class="etichetta-piccola">Tratte</div>`)
+  );
+  sr.append(riep);
+  const wrap = el('div','scorri-x');
+  const tb = el('table','wp');
+  tb.innerHTML = `<thead><tr><th>N.</th><th>Nome</th><th>R [NM]</th><th>Lat</th><th>Lon</th><th>BWW°</th><th>D.Enr</th><th>Dist</th><th>Nota</th></tr></thead>`;
+  const tbody = document.createElement('tbody');
+  rotta.waypoints.forEach(w=>{
+    const tr = el('tr', w.nota ? 'evidenzia' : '');
+    tr.innerHTML = `<td>${w.n}</td><td>${esc(w.nome)}</td><td>${w.raggio_nm!=null?w.raggio_nm.toFixed(2):'—'}</td>`+
+      `<td>${esc(w.lat_txt)}</td><td>${esc(w.lon_txt)}</td>`+
+      `<td>${w.bww!=null?w.bww.toFixed(1):'—'}</td><td>${w.dist_enr!=null?w.dist_enr.toFixed(2):'—'}</td><td>${w.dist!=null?w.dist.toFixed(2):'—'}</td>`+
+      `<td class="nota-wp">${w.nota?esc(w.nota):''}</td>`;
+    tbody.append(tr);
+  });
+  tb.append(tbody); wrap.append(tb); sr.append(wrap);
+  const note = el('div',''); note.style.marginTop='13px';
+  rotta.note.forEach(n=>{
+    note.append(el('div','nota-rotta', esc(n.testo)+' '+chipProv(n.fonte, n.verificato)));
+  });
+  sr.append(note);
+  carta.append(sr);
+
+  /* fonti */
+  const sf = el('section','sezione');
+  sf.append(el('h2','titolo-sezione','Fonti — verifica del 22.07.2026'));
+  p.fonti.forEach(f=>{
+    const r = el('div','fonte');
+    r.innerHTML = `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.label)}</a><span class="data-verifica">verif. ${esc(f.verificato)}</span>`;
+    sf.append(r);
+  });
+  carta.append(sf);
+
+  root.append(carta);
+}
+
+/* ---------- mappa ---------- */
+let mappa=null, layerRaggi=null, boundsRotta=null, posBanchina=null;
+function initMappa(rotta, porto){
+  if(typeof L === 'undefined'){
+    document.getElementById('mappa').style.display='none';
+    document.getElementById('avvisoOffline').style.display='block';
+    return;
+  }
+  const punti = rotta.waypoints.map(w=>({ ...w, lat:ddmToDec(w.lat_txt), lon:ddmToDec(w.lon_txt) }));
+  const latlngs = punti.map(p=>[p.lat, p.lon]);
+
+  mappa = L.map('mappa', {zoomControl:true});
+  const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap'});
+  const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom:19, attribution:'© Esri World Imagery'});
+  const seamark = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {maxZoom:18, attribution:'© OpenSeaMap'});
+  osm.addTo(mappa); seamark.addTo(mappa);
+
+  const linea = L.polyline(latlngs, {color:'#0E3A4C', weight:2.5, opacity:.95});
+  const lineaAlone = L.polyline(latlngs, {color:'#FFFFFF', weight:6, opacity:.55});
+  lineaAlone.addTo(mappa); linea.addTo(mappa);
+
+  layerRaggi = L.layerGroup();
+  const gruppoWP = L.layerGroup().addTo(mappa);
+  punti.forEach(p=>{
+    const operativo = !!p.nota;
+    const mk = L.circleMarker([p.lat,p.lon], {
+      radius: operativo?6:4,
+      color: operativo? '#B0207A' : '#0E3A4C',
+      fillColor: operativo? '#B0207A' : '#FDFAF1',
+      fillOpacity: operativo? .95 : 1, weight:2
+    });
+    mk.bindPopup(`<b>WP ${String(p.n).padStart(2,'0')} — ${esc(p.nome)}</b><br>${esc(p.lat_txt)}<br>${esc(p.lon_txt)}`+
+      (p.bww!=null?`<br>BWW ${p.bww.toFixed(1)}° · tratta ${p.dist!=null?p.dist.toFixed(2):'—'} NM`:'')+
+      (p.nota?`<br><span style="color:#B0207A">${esc(p.nota)}</span>`:''));
+    mk.addTo(gruppoWP);
+    if(p.raggio_nm > 0){
+      L.circle([p.lat,p.lon], {radius:p.raggio_nm*1852, color:'#5A6B78', weight:1, dashArray:'4 4', fill:false, opacity:.6}).addTo(layerRaggi);
+    }
+  });
+
+  L.control.layers(
+    {'Carta':osm, 'Satellite':sat},
+    {'Segnalamenti (OpenSeaMap)':seamark, 'Raggi di guardia WP':layerRaggi},
+    {collapsed:true}
+  ).addTo(mappa);
+
+  boundsRotta = linea.getBounds().pad(0.06);
+  mappa.fitBounds(boundsRotta);
+  const fine = punti[punti.length-1];
+  posBanchina = [fine.lat, fine.lon];
+  L.marker(posBanchina).addTo(mappa).bindPopup(`<b>${esc(porto.banchina_principale)}</b><br>${esc(porto.posizione.testo)}`);
+
+  document.getElementById('btnRotta').addEventListener('click', ()=> mappa.fitBounds(boundsRotta));
+  document.getElementById('btnBanchina').addEventListener('click', ()=>{
+    if(!mappa.hasLayer(sat)){ mappa.removeLayer(osm); sat.addTo(mappa); }
+    mappa.flyTo(posBanchina, 17, {duration:1.2});
+  });
+}
+
+/* ---------- tema notte ---------- */
+document.getElementById('toggleNotte').addEventListener('click', function(){
+  const html = document.documentElement;
+  const notte = html.getAttribute('data-theme')==='notte';
+  html.setAttribute('data-theme', notte ? 'giorno' : 'notte');
+  this.setAttribute('aria-pressed', String(!notte));
+  this.textContent = notte ? 'PLANCIA NOTTE' : 'PLANCIA GIORNO';
+});
+
+/* ---------- avvio ---------- */
+(function(){
+  const porto = DATA.porti[0];
+  const rotta = DATA.rotte[0];
+  document.getElementById('chipVersione').textContent = 'v'+DATA.meta.versione;
+  document.getElementById('timbro').textContent =
+    `NARRATIVE PORTI v${DATA.meta.versione} · generato il ${DATA.meta.generato} da data/ · repo: ${DATA.meta.repo}`;
+  renderPorto(porto, rotta);
+  try{ initMappa(rotta, porto); }
+  catch(e){
+    document.getElementById('mappa').style.display='none';
+    document.getElementById('avvisoOffline').style.display='block';
+  }
+})();
+</script>
+</body>
+</html>
