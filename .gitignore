@@ -1,2 +1,5 @@
 scripts/__pycache__/
 output/pg-*.png
+output/v-*.png
+output/q-*.png
+output/pagina*.jpg
