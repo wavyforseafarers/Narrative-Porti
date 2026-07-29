@@ -1,0 +1,121 @@
+{
+  "id": "stavanger",
+  "nome": "Stavanger",
+  "paese": "Norvegia",
+  "regione": "Rogaland",
+  "banchina_principale": "Strandkaien (16W) — Cruise & Waiting Terminal Stavanger",
+  "posizione": {
+    "testo": "58°58.489' N | 005°43.548' E",
+    "lat": 58.974817,
+    "lon": 5.725800
+  },
+  "sezioni": [
+    {
+      "titolo": "Generalità e contatti",
+      "voci": [
+        { "t": "Autorità portuale", "v": "Stavangerregionen Havn IKS — Strandkaien 46, 4005 Stavanger", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Port control", "v": "Maritime Service Center — VHF ch 12 (nominativo «Port of Stavanger») · tel +47 51 50 12 01 · maritim@stavanger.havn.no", "fonte": "CW", "nota": "Canale VHF 12 indicato dal comandante e confermato dal Cruise Terminal Handbook e dal sito ufficiale", "verificato": "2026-07-29" },
+        { "t": "Orari VHF", "v": "Lun–ven 06:30–22:00 · sab–dom 10:00–17:30. Fuori orario solo reperibilità telefonica: la radio VHF non è in servizio.", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "VTS", "v": "Kvitsøy VTS — settore Sud VHF ch 18 (settore Nord ch 19). Obbligo di permesso per l'uso delle acque, in entrata e in uscita dall'area VTS.", "fonte": "CW", "nota": "Canale 18 indicato dal comandante e confermato dal Cruise Terminal Handbook", "verificato": "2026-07-29" },
+        { "t": "Pilotaggio", "v": "Kvitsøy Pilot — VHF ch 13. Imbarco alla stazione di Skudefjord (WP19).", "fonte": "CW", "verificato": "2026-07-29" },
+        { "t": "Preavviso pilota", "v": "Conferma richiesta 2 ore prima dell'arrivo al punto d'imbarco (fonte ufficiale). In questo transito la chiamata è stata effettuata 1 ora prima.", "fonte": "W", "nota": "Differenza rispetto alla pratica registrata a bordo: verificare il preavviso richiesto prima dell'arrivo successivo", "verificato": "2026-07-29" },
+        { "t": "Rapporto d'arrivo", "v": "1 ora prima dell'arrivo chiamare Port of Stavanger su VHF ch 12 o tel +47 51 50 12 01. Vietato tentare l'ingresso in porto senza contatto confermato. 20 minuti prima dell'approccio finale: prova di comunicazione con la banchina su ch 12.", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Notifica d'arrivo", "v": "SafeSeaNet Norway (National Single Window); documenti di anløp a maritim@stavanger.havn.no", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Codici porto", "v": "UN/LOCODE NOSVG · Port Facility NOSVG-0019", "fonte": "W", "verificato": "2026-07-29" }
+      ]
+    },
+    {
+      "titolo": "Dati nautici e banchina",
+      "voci": [
+        { "t": "Banchina", "v": "Strandkaien 16W — banchina principale per le crociere, la meglio attrezzata; riceve le navi più grandi e più recenti", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Lunghezza banchina", "v": "309 m — nessun limite dichiarato di lunghezza nave", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Orientamento banchina", "v": "340°", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Fondali dichiarati", "v": "8.3 m sottobordo · 9.0 m ai parabordi · 10.8 m ai pontoni", "fonte": "W", "nota": "Valori dal Cruise Terminal Handbook (rev. 05, 25.01.2023), che rimanda esplicitamente a ENC o carta cartacea per i dati ufficiali di navigazione. Da confermare sul piano d'ormeggio in vigore.", "verificato": "2026-07-29" },
+        { "t": "UKC richiesta dal porto", "v": "Navi di larghezza > 20 m: 1,5% della larghezza della nave. Navi < 20 m di larghezza: 0,30 m.", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Ormeggio", "v": "Lato sinistro, configurazione cavi 6/2 prua e poppa", "fonte": "C" },
+        { "t": "Bitte e cavi", "v": "Bitte da 50 t, 100 t e 200 t (vedi piano d'ormeggio). Massimo 2 cavi per bitta da 50 t.", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Parabordi e pontoni", "v": "Parabordi 3,9 × 6,5 m · pontoni 7,8 × 7,8 m · passerelle da 7, 8, 12, 13 e 14 m (certificate annualmente)", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Evoluzione", "v": "Accostata in arrivo o in partenza secondo il lato banchina assegnato; bacino di evoluzione a WP27. Lato banchina indicato sul piano d'ormeggio e vincolante.", "fonte": "CW", "verificato": "2026-07-29" },
+        { "t": "Ancoraggio", "v": "Åmøyfjorden. Posizione tender: 59°00.062' N | 005°41.924' E, fondale 60 m, rilevamento 090° al faro di Dusavika, distanza 0,6 NM. Pinå utilizzabile previa approvazione di porto e pilota.", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Strumenti live del porto", "v": "Anemometri su portwind.no (Tjuvholmen per la baia interna nord, DSD per la baia interna sud) · corrente di marea a Tjuvholmen · webcam del porto — link in Fonti", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Maree", "v": "Riferimento ufficiale: Kartverket «Se havnivå»", "fonte": "W", "verificato": "2026-07-29" }
+      ]
+    },
+    {
+      "titolo": "Combustibile e ambiente",
+      "voci": [
+        { "t": "Dentro il port limit", "v": "Solo MGO. AAQS/EGCS non consentito.", "fonte": "C", "nota": "Vincolo registrato a bordo al WP25, che coincide con il port limit" },
+        { "t": "In banchina", "v": "Passaggio a MGO + SCR (Selective Catalytic Reduction)", "fonte": "C", "nota": "Motivazione registrata a bordo: trattamento tariffario" },
+        { "t": "Scrubber — regola pubblicata", "v": "Il Cruise Terminal Handbook (rev. 05, 2023) raccomanda esclusivamente il circuito chiuso.", "fonte": "W", "nota": "Meno restrittivo del vincolo operativo applicato a bordo: in caso di dubbio prevale il divieto registrato dal comandante. Verificare la revisione in vigore del Handbook.", "verificato": "2026-07-29" },
+        { "t": "Shore power", "v": "Impianto ad alta tensione a Strandkaien, fino a 16 MW a una nave per volta", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Obiettivo shore power", "v": "Il piano d'azione crociere del porto prevede che entro il 2027 tutti gli anløp nel centro di Stavanger si colleghino a terra durante la sosta", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Environmental Port Index", "v": "Rapporto di partenza da completare entro 72 ore sul portale EPI, a cura dell'equipaggio", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Inceneritore", "v": "Uso non consentito in porto", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Fiordi patrimonio UNESCO", "v": "Le regole a zero emissioni in vigore dal 01.01.2026 riguardano i soli Heritage Fjords e non si applicano a Stavanger", "fonte": "W", "verificato": "2026-07-29" }
+      ]
+    },
+    {
+      "titolo": "Restrizioni operative in porto",
+      "voci": [
+        { "t": "Velocità", "v": "Limite 8 kn nella baia interna", "fonte": "W", "nota": "In questo transito: limite 10 kn da WP23, riduzione a 6 kn nel punto più stretto", "verificato": "2026-07-29" },
+        { "t": "Emissioni acustiche", "v": "Fischio nave solo come ausilio alla navigazione o in emergenza · musica di sail away vietata sui ponti aperti · annunci esterni al pubblico vietati salvo sicurezza ed emergenza", "fonte": "CW", "nota": "Divieto di emissioni acustiche registrato a bordo e confermato dal regolamento portuale", "verificato": "2026-07-29" },
+        { "t": "Motivo delle restrizioni", "v": "Le banchine del centro confinano con il sito storico «Gamle Stavanger»: circa 200 case in legno di oltre 200 anni, abitate. Il porto chiede particolare cautela su rumore ed emissioni.", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Manutenzione", "v": "Ammessa solo manutenzione leggera e silenziosa. Smerigliatrici e scrostatori non consentiti. Verniciatura a spruzzo vietata; lavaggio e verniciatura non consentiti la domenica e nei festivi.", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Esercitazioni", "v": "Non prima delle 08:00 né dopo le 18:00 nei giorni feriali; sabato 10:00–18:00; mai la domenica e nei festivi", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Preavviso 24 h", "v": "Richiesto per provviste, rifiuti, bunkeraggio, operazioni con gru e piattaforme elevabili", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Avaria", "v": "Ogni avaria ad apparati di navigazione o di propulsione va comunicata all'autorità portuale prima dell'arrivo", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Rimorchiatori", "v": "Gestiti da società private, non sempre disponibili in porto: verificare con l'agente", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "ISPS", "v": "Terminal ISPS. DOS annuale da firmare al primo scalo dell'anno.", "fonte": "W", "verificato": "2026-07-29" }
+      ]
+    },
+    {
+      "titolo": "Servizi",
+      "voci": [
+        { "t": "Acqua dolce", "v": "Capacità dichiarata dal porto 50 m³/h, con analisi di qualità mensile", "fonte": "W", "verificato": "2026-07-29" },
+        { "t": "Acqua dolce — rata rilevata", "v": "Bunker fresh water effettuato con rata di 45 m³/h", "fonte": "C" },
+        { "t": "Tender", "v": "Punti di sbarco Bjergsted e Museo del Petrolio; di norma due tender contemporaneamente", "fonte": "W", "verificato": "2026-07-29" }
+      ]
+    }
+  ],
+  "avvicinamento": {
+    "vento": "Vento prevalente durante la guardia: Sud 20 kn",
+    "sequenza": [
+      { "wp": 19, "nome": "Skudefjord PLT", "azione": "Imbarco pilota; piloti chiamati 1 ora prima su VHF ch 13. Kvitsøy VTS contattato su ch 18 all'ingresso in area.", "tipo": "vts" },
+      { "wp": 20, "nome": "Sveina", "azione": "Punto di rotta in avvicinamento", "tipo": "punto" },
+      { "wp": 21, "nome": "Terneboane", "azione": "Punto di rotta in avvicinamento", "tipo": "punto" },
+      { "wp": 22, "nome": "Tunge", "azione": "Punto di rotta in avvicinamento", "tipo": "punto" },
+      { "wp": 23, "nome": "SBE / Thrusters on / Speed limit 10 kn", "azione": "Stand By Engines, eliche trasversali in servizio, limite di velocità 10 kn. Subito dopo il waypoint: commit point con raggio 0.35 NM a sinistra.", "tipo": "manning" },
+      { "wp": 24, "nome": "Speed limit 10 kn", "azione": "Conferma del limite di velocità", "tipo": "velocita" },
+      { "wp": 25, "nome": "Port limit", "azione": "EGCS non consentito: da qui solo MGO + SCR", "tipo": "limite" },
+      { "wp": 26, "nome": "Ulnesgrunnen", "azione": "Punto di rotta nella baia interna", "tipo": "punto" },
+      { "wp": null, "nome": "Traverso di Tastasjoen a dritta", "azione": "Inizio del passaggio stretto verso il bacino interno", "tipo": "manovra" },
+      { "wp": null, "nome": "Kalhammarodden – Tjuvholmen", "azione": "Punto più stretto, fra la punta e l'isolotto: transitato a 6 kn in riduzione per l'approccio alla banchina", "tipo": "velocita" },
+      { "wp": 27, "nome": "Turning basin", "azione": "Bacino di evoluzione", "tipo": "manovra" },
+      { "wp": 28, "nome": "Strandkaien berth", "azione": "Ormeggio lato sinistro, configurazione 6/2 prua e poppa", "tipo": "ormeggio" }
+    ]
+  },
+  "note_narrative": [
+    "Presa guardia alle 04:00 con velocità 18 nodi, velocità 17.2.",
+    "FCO Fuel Changeover iniziato alle 03:18. Dentro port limit solo MGO allowed, no AAQS. Solo a livello di tasse una volta in banchina si switcha MGO+SCR (Selective Catalytic Reduction).",
+    "Vento prevalente durante la guardia Sud 20 nodi.",
+    "1h prima chiamato piloti CH 13 «Kvitsøy pilot». Contattato Kvitsøy VTS CH 18 entrata VTS. Port control CH 12.",
+    "Imbarco pilota WP 19, si procede verso l'entrata. Subito dopo WP 23 commit point con radius 0.35 nm a sinistra.",
+    "Passaggio stretto dopo il traverso a dritta di Tastasjoen. Punto più stretto tra Kalhammarodden e isolotto Tjuvholmen, effettuato a 6 nodi in riduzione per poi approcciare banchina.",
+    "Ormeggio lato sinistro 6/2 prua e poppa, banchina «Strandkaien». Divieto di emissioni acustiche. Servizi effettuati bunker fresh water con rata 45 m³/h."
+  ],
+  "fonti": [
+    { "label": "Stavangerregionen Havn — Cruise Terminal Handbook NOSVG-0019 (rev. 05, 25.01.2023)", "url": "https://business.edgeofnorway.com/getfile.php/1319033-1692085643/Filer/0403_SRH_Cruise_Terminal_Handbook_2023_02_01_ef_revisjon5_low.pdf", "verificato": "2026-07-29" },
+    { "label": "Stavangerregionen Havn — Contatti (VHF 12, orari, telefoni)", "url": "https://www.stavangerhavn.no/en/about/contact/", "verificato": "2026-07-29" },
+    { "label": "Stavangerregionen Havn — Regolamenti in vigore (Lovdata)", "url": "https://www.stavangerhavn.no/en/maritim/statutory-regulations/", "verificato": "2026-07-29" },
+    { "label": "Stavangerregionen Havn — Piani d'ormeggio", "url": "https://www.stavangerhavn.no/en/about/documents/mooringplans/", "verificato": "2026-07-29" },
+    { "label": "Stavangerregionen Havn — ISPS", "url": "https://www.stavangerhavn.no/en/isps/", "verificato": "2026-07-29" },
+    { "label": "Stavangerregionen Havn — Piano d'azione crociere 2022–2030 (shore power entro il 2027)", "url": "https://www.stavangerhavn.no/wp-content/uploads/Strategi_Cruise_Handlingsplan-cruiseanlop-Stavanger-sentrum-2022-2030_Vedtatt-27.09.23-1.pdf", "verificato": "2026-07-29" },
+    { "label": "Portwind — anemometri e corrente di marea del porto di Stavanger", "url": "https://www.portwind.no/", "verificato": "2026-07-29" },
+    { "label": "Stavangerregionen Havn — Webcam", "url": "https://www.stavangerhavn.no/en/about/webcam/", "verificato": "2026-07-29" },
+    { "label": "Maritimt Forum — Shore power Strandkaien, alta tensione fino a 16 MW", "url": "https://www.maritimt-forum.no/aktuelt/20-millioner-kroner-til-landstrm-i-stavanger", "verificato": "2026-07-29" },
+    { "label": "Edge of Norway — Strandkaien banchina principale per le crociere", "url": "https://business.edgeofnorway.com/leisure-cruise/cruise/cruise-calls-and-the-environmental-impact/", "verificato": "2026-07-29" },
+    { "label": "Kartverket — Se havnivå (maree e livello del mare)", "url": "https://www.kartverket.no/en/at-sea/se-havniva/tides-and-water-level", "verificato": "2026-07-29" }
+  ],
+  "versione_scheda": "1.0",
+  "aggiornato": "2026-07-29"
+}

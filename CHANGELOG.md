@@ -3,6 +3,17 @@
 Tutte le modifiche rilevanti a questo progetto sono documentate qui.
 Formato versione: `vMAJOR.MINOR` — MINOR per aggiunte/modifiche ai dati, MAJOR per cambi di struttura.
 
+## v1.2 — 2026-07-29
+
+- Secondo scalo: Stavanger (Norvegia) — Strandkaien 16W, Cruise & Waiting Terminal.
+- Rotta Ålesund → Stavanger: 28 waypoint (trascrizione integrale), imbarco pilota a Skudefjord, passaggio stretto Kalhammarodden–Tjuvholmen.
+- Verifiche del 29.07.2026: Kvitsøy VTS settore Sud ch 18, Port of Stavanger ch 12, banchina 309 m orientata 340°, UKC 1,5% della larghezza, shore power 16 MW, limite 8 kn in baia interna, regime di restrizioni acustiche.
+- Ålesund: Storneskaia 354 m, ISPS, energia da terra 400/440/690 V; contatti Havnevakta.
+- Build multi-scalo: struttura dati e generatore ora gestiscono più porti e rotte; copertina, sommario e testata si adattano al numero di scali.
+- Tabella waypoint a colonne variabili: ogni rotta dichiara le proprie colonne, così i piani di bordo con campi diversi restano fedeli all'originale.
+- Distanza di rotta calcolata dalle coordinate quando non riportata nella tabella di bordo, ed etichettata come tale.
+- Segnalata la differenza fra il divieto EGCS registrato a bordo e la formulazione meno restrittiva del Cruise Terminal Handbook 2023.
+
 ## v1.1 — 2026-07-26
 
 - PDF: testata di pagina su banda piena (contrasto corretto, prima si confondeva con lo sfondo).

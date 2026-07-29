@@ -24,9 +24,38 @@ def ddm_to_dec(txt):
     v = int(m.group(1)) + float(m.group(2))/60.0
     return -v if m.group(3) in "SW" else v
 
+import math
+
+def dist_rl(a, b):
+    """Distanza lossodromica in NM fra due waypoint."""
+    la1, la2 = math.radians(a["lat"]), math.radians(b["lat"])
+    dlat = la2 - la1
+    dlon = math.radians(b["lon"] - a["lon"])
+    if abs(dlon) > math.pi:
+        dlon -= math.copysign(2*math.pi, dlon)
+    dpsi = math.log(math.tan(math.pi/4 + la2/2) / math.tan(math.pi/4 + la1/2))
+    q = dlat/dpsi if abs(dpsi) > 1e-12 else math.cos(la1)
+    return math.degrees(math.hypot(dlat, q*dlon)) * 60.0
+
 for r in ROTTE:
     for w in r["waypoints"]:
         w["lat"] = ddm_to_dec(w["lat_txt"]); w["lon"] = ddm_to_dec(w["lon_txt"])
+    # distanza cumulata: usa i valori di bordo se presenti, altrimenti li calcola
+    if r.get("distanza_nm") is None:
+        tot = sum(dist_rl(x, y) for x, y in zip(r["waypoints"][:-1], r["waypoints"][1:]))
+        r["distanza_nm"] = round(tot, 2)
+        r["distanza_calcolata"] = True
+    r.setdefault("colonne", ["n","nome","raggio_nm","lat_txt","lon_txt","bww","dist_enr","dist","sail"])
+
+def porto_di(rotta):
+    pid = rotta.get("porto_arrivo")
+    for p_ in PORTI:
+        if p_["id"] == pid: return p_
+    return PORTI[0]
+
+# ogni rotta è abbinata al proprio porto di arrivo, in ordine di inserimento
+COPPIE = sorted(((porto_di(r), r) for r in ROTTE),
+                key=lambda c: (c[0].get("aggiornato",""), c[0]["nome"]))
 
 def data_breve(iso):
     """2026-07-22 -> 22.07.26"""
@@ -45,6 +74,8 @@ def build_html():
 
 # ---------------------------------------------------------------- cartine
 ACQUA="#CFE2E8"; TERRA="#EBDFB6"; COSTA="#8A7F5C"; NAVY="#0E3A4C"; MAGENTA="#B0207A"; SEC="#5A6B78"
+
+PROPORZIONI = {}
 
 def chartlet(rotta, path, estensione, passo, etichette, titolo, figsize,
              marca_note=True, scava=None, fs=5.0, fs_tit=5.8, fs_tick=4.2):
@@ -101,27 +132,76 @@ def chartlet(rotta, path, estensione, passo, etichette, titolo, figsize,
     fig.text(.995,.004,"Schema indicativo — not for navigation", ha="right",
              fontsize=fs_tick, color=SEC, style="italic")
     fig.tight_layout(pad=.35)
-    fig.savefig(path, facecolor=fig.get_facecolor())
+    # ritaglio al contenuto: le rotte molto sviluppate in latitudine lascerebbero
+    # altrimenti ampie fasce vuote ai lati dell'inquadratura.
+    fig.savefig(path, facecolor=fig.get_facecolor(), bbox_inches="tight", pad_inches=0.02)
     plt.close(fig)
+    # Le rotte molto sviluppate in latitudine lasciano ampie fasce vuote ai lati
+    # dell'inquadratura: ritaglio ai contenuti effettivi (mappa, etichette, assi).
+    from PIL import Image as _I, ImageChops as _IC
+    import numpy as _np
+    with _I.open(path) as _im:
+        _rgb=_im.convert("RGB")
+        _sfondo=_I.new("RGB", _rgb.size, tuple(_np.array(_rgb)[0,0]))
+        _bbox=_IC.difference(_rgb, _sfondo).convert("L").point(lambda v: 255 if v>10 else 0).getbbox()
+        if _bbox:
+            m=8
+            _bbox=(max(0,_bbox[0]-m), max(0,_bbox[1]-m),
+                   min(_rgb.size[0], _bbox[2]+m), min(_rgb.size[1], _bbox[3]+m))
+            _rgb=_rgb.crop(_bbox); _rgb.save(path)
+        PROPORZIONI[pathlib.Path(path).stem] = _rgb.size[1]/_rgb.size[0]
     print("CARTA ->", path)
 
 def build_cartine():
-    r = ROTTE[0]
-    chartlet(r, OUT/"_rotta_overview.png",
-        (59.18, 60.88, 3.90, 5.58), 0.004,
-        [(1,"BERGEN — PIER",6,4,"left"), (4,"Askøybrua (62 m)",6,-9,"left"),
-         (13,"POFF FEDJE",7,3,"left"), (14,"TSS OUT",-6,5,"right"),
-         (16,"12 NM OUT",-7,-3,"right"), (17,"12 NM IN",-8,0,"right"),
-         (19,"PORT LIMIT",-8,4,"right"), (25,"HAUGESUND",8,-2,"left")],
-        "Rotta Bergen → Haugesund — 132.61 NM · 25 WP", (2.44, 3.14))
-    chartlet(r, OUT/"_rotta_approccio.png",
-        (59.345, 59.555, 4.86, 5.34), 0.0008,
-        [(19,"WP19 · PORT LIMIT",6,6,"left"), (20,"WP20 · GRUNNANE 11→7 kn",6,8,"left"),
-         (21,"WP21 · SBE / RED MANNING",-9,11,"right"), (22,"WP22 · Kråkeflua 8 kn",-9,-13,"right"),
-         (23,"WP23 · GALVEN",-11,-2,"right"), (24,"WP24 · GALTEN — acc. SX ROT>30°/min",9,-9,"left"),
-         (25,"GARPESKJÆRSKAIEN",9,6,"left")],
-        "Approccio finale — sequenza operativa", (3.15, 2.20),
-        scava={"da_wp": 21, "raggio_deg": 0.0030})
+    """Una coppia di cartine per ogni rotta: quadro generale + approccio finale."""
+    for porto, r in COPPIE:
+        cfg = CARTINE[r["id"]]
+        chartlet(r, OUT/f"_{r['id']}_overview.png", cfg["overview"]["estensione"],
+                 cfg["overview"]["passo"], cfg["overview"]["etichette"],
+                 cfg["overview"]["titolo"], (2.44, 3.14))
+        chartlet(r, OUT/f"_{r['id']}_approccio.png", cfg["approccio"]["estensione"],
+                 cfg["approccio"]["passo"], cfg["approccio"]["etichette"],
+                 cfg["approccio"]["titolo"], (3.15, 2.20),
+                 scava=cfg["approccio"].get("scava"))
+
+# Inquadrature e etichette delle cartine, una voce per rotta.
+CARTINE = {
+  "bergen_haugesund": {
+    "overview": {
+      "estensione": (59.18, 60.88, 3.90, 5.58), "passo": 0.004,
+      "titolo": "Rotta Bergen → Haugesund — 132.61 NM · 25 WP",
+      "etichette": [(1,"BERGEN — PIER",6,4,"left"), (4,"Askøybrua (62 m)",6,-9,"left"),
+                    (13,"POFF FEDJE",7,3,"left"), (14,"TSS OUT",-6,5,"right"),
+                    (16,"12 NM OUT",-7,-3,"right"), (17,"12 NM IN",-8,0,"right"),
+                    (19,"PORT LIMIT",-8,4,"right"), (25,"HAUGESUND",8,-2,"left")]},
+    "approccio": {
+      "estensione": (59.345, 59.555, 4.86, 5.34), "passo": 0.0008,
+      "titolo": "Approccio finale — sequenza operativa",
+      "scava": {"da_wp": 21, "raggio_deg": 0.0030},
+      "etichette": [(19,"WP19 · PORT LIMIT",6,6,"left"), (20,"WP20 · GRUNNANE 11→7 kn",6,8,"left"),
+                    (21,"WP21 · SBE / RED MANNING",-9,11,"right"), (22,"WP22 · Kråkeflua 8 kn",-9,-13,"right"),
+                    (23,"WP23 · GALVEN",-11,-2,"right"), (24,"WP24 · GALTEN — acc. SX ROT>30°/min",9,-9,"left"),
+                    (25,"GARPESKJÆRSKAIEN",9,6,"left")]}},
+  "alesund_stavanger": {
+    "overview": {
+      "estensione": (58.75, 62.72, 2.20, 7.40), "passo": 0.008,
+      "titolo": "Rotta Ålesund → Stavanger — 25 WP in mare aperto",
+      "etichette": [(1,"ÅLESUND",7,3,"left"), (8,"PILOT OFF — Breisundet",-7,-9,"right"),
+                    (12,"12 NM OUT",-7,4,"right"), (13,"TSS IN",-7,-9,"right"),
+                    (14,"BEGLA",-8,-2,"right"), (15,"OUTSIDE TSS",-8,3,"right"),
+                    (17,"UTSIRA",-8,-8,"right"), (19,"SKUDEFJORD PLT",8,2,"left"),
+                    (28,"STAVANGER",8,-7,"left")]},
+    "approccio": {
+      "estensione": (58.955, 59.135, 5.36, 5.79), "passo": 0.0007,
+      "titolo": "Approccio finale — sequenza operativa",
+      "scava": {"da_wp": 23, "raggio_deg": 0.0026},
+      "etichette": [(19,"WP19 · SKUDEFJORD — pilota",7,5,"left"), (21,"WP21 · TERNEBOANE",7,4,"left"),
+                    (22,"WP22 · TUNGE",7,3,"left"),
+                    (23,"WP23 · SBE / thrusters / 10 kn",-9,9,"right"),
+                    (25,"WP25 · PORT LIMIT — solo MGO",-9,-11,"right"),
+                    (27,"WP27 · turning basin",-10,5,"right"),
+                    (28,"STRANDKAIEN",9,-7,"left")]}},
+}
 
 # ---------------------------------------------------------------- PDF
 def build_pdf():
@@ -139,8 +219,10 @@ def build_pdf():
     C_BUFF=colors.HexColor("#F6F0E0"); C_TERRA=colors.HexColor("#EDE4C8")
     C_RIGA=colors.HexColor("#D8D2BE")
 
-    porto=PORTI[0]; rotta=ROTTE[0]
     pdf_path = OUT/f"Narrative_Porti_v{VERSIONE}.pdf"
+
+    ELENCO_PORTI = "  ·  ".join(p_["nome"] for p_, _ in COPPIE)
+    ELENCO_PORTI_LUNGO = " · ".join(f'{p_["nome"]} ({p_["paese"]})' for p_, _ in COPPIE)
 
     class Doc(BaseDocTemplate):
         def afterFlowable(self, fl):
@@ -190,7 +272,7 @@ def build_pdf():
         canv.setFillColor(C_MAG);  canv.rect(0, H-14*mm, W, 1*mm, stroke=0, fill=1)
         testo_sp(canv, 18*mm, H-8.5*mm, "NARRATIVE PORTI", "Helvetica-Bold", 8.5, 1.8, C_BUFF)
         canv.setFont("Helvetica", 8.5); canv.setFillColor(C_BUFF)
-        canv.drawRightString(192*mm, H-8.5*mm, f"Haugesund  ·  Bergen \u2192 Haugesund  ·  v{VERSIONE}")
+        canv.drawRightString(192*mm, H-8.5*mm, f"{ELENCO_PORTI}  ·  v{VERSIONE}")
         canv.setStrokeColor(C_RIGA); canv.setLineWidth(0.6)
         canv.line(18*mm, 12.5*mm, 192*mm, 12.5*mm)
         canv.setFont("Helvetica-Oblique", 7); canv.setFillColor(C_SEC)
@@ -218,22 +300,31 @@ def build_pdf():
         canv.setFillColor(C_BUFF); canv.setFont("Courier", 9)
         canv.drawString(20.5*mm, H-56*mm, f"VERSIONE {VERSIONE}   ·   GENERATO {OGGI}")
         canv.drawString(20.5*mm, H-62*mm, f"FONTE DATI: data/ — {REPO}")
-        # rotta
-        canv.setFillColor(C_INK); canv.setFont("Times-Italic", 31)
-        canv.drawString(20*mm, H-108*mm, "Bergen")
-        canv.setFillColor(C_MAG); canv.setFont("Helvetica", 22)
-        canv.drawString(58*mm, H-107.4*mm, "\u2192")
-        canv.setFillColor(C_INK); canv.setFont("Times-Italic", 31)
-        canv.drawString(70*mm, H-108*mm, "Haugesund")
-        canv.setFont("Courier", 9.5); canv.setFillColor(C_SEC)
-        canv.drawString(20.5*mm, H-117*mm, "132.61 NM  ·  25 WAYPOINT  ·  TRATTE LOSSODROMICHE")
+        # elenco rotte
+        y = H-104*mm
+        for porto_, rotta_ in COPPIE:
+            canv.setFillColor(C_INK); canv.setFont("Times-Italic", 24)
+            canv.drawString(20*mm, y, rotta_["da"])
+            x = 20*mm + canv.stringWidth(rotta_["da"], "Times-Italic", 24) + 4*mm
+            canv.setFillColor(C_MAG); canv.setFont("Helvetica", 16)
+            canv.drawString(x, y+0.6*mm, "\u2192")
+            x += canv.stringWidth("\u2192", "Helvetica", 16) + 4*mm
+            canv.setFillColor(C_INK); canv.setFont("Times-Italic", 24)
+            canv.drawString(x, y, rotta_["a"])
+            canv.setFont("Courier", 8.5); canv.setFillColor(C_SEC)
+            d = f'{rotta_["distanza_nm"]:.2f} NM'
+            if rotta_.get("distanza_calcolata"): d += " (calc.)"
+            canv.drawString(20.5*mm, y-6.5*mm,
+                            f'{d}  ·  {len(rotta_["waypoints"])} WAYPOINT  ·  ARRIVO {porto_["nome"].upper()}')
+            y -= 17*mm
 
         # riquadro contenuti — altezza calcolata sul testo effettivo
-        righe=["Scheda porto — Haugesund (Norvegia) · Garpeskjærskaien, Haugesund Cruise Port",
-               "Sequenza di manovra per l'arrivo da nord, con eventi operativi",
-               "Piano waypoint integrale Bergen \u2192 Haugesund (25 WP, trascrizione di bordo)",
-               "Cartine schematiche della rotta e dell'approccio finale",
-               "Fonti ufficiali con data di verifica (22.07.2026) e provenienza di ogni dato"]
+        n_ = len(COPPIE)
+        righe=[f'Schede porto: {ELENCO_PORTI_LUNGO}']
+        righe += ["Sequenza di manovra per l'arrivo, con gli eventi operativi in evidenza",
+                  f'Piano waypoint integrale di {n_} ' + ("rotta" if n_==1 else "rotte") + ', trascrizione di bordo',
+                  "Cartine schematiche della rotta e dell'approccio finale per ogni scalo",
+                  "Fonti ufficiali con data di verifica e provenienza di ogni dato"]
         x_box, w_box = 20*mm, 170*mm
         x_testo = 31.5*mm; w_testo = w_box - (x_testo - x_box) - 8*mm
         blocchi = [spezza(canv, r_, "Helvetica", 9, w_testo) for r_ in righe]
@@ -269,7 +360,7 @@ def build_pdf():
     doc = Doc(str(pdf_path), pagesize=A4,
               leftMargin=18*mm, rightMargin=18*mm, topMargin=20*mm, bottomMargin=16*mm,
               title=f"Narrative Porti v{VERSIONE}", author="Narrative Porti",
-              subject="Database arrivi — Bergen \u2192 Haugesund")
+              subject="Database arrivi — " + " | ".join(r_["titolo"] for _, r_ in COPPIE))
     frame = Frame(18*mm, 14*mm, 174*mm, 263*mm, id="f",
                   leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
     doc.addPageTemplates([
@@ -330,142 +421,162 @@ def build_pdf():
     story.append(toc)
     story.append(Spacer(1, 9))
 
-    # ---- scheda porto
-    story.append(H("Scheda porto — Haugesund", "porto_haugesund"))
-    story.append(Paragraph(f'{porto["banchina_principale"]} — {porto["paese"]}, {porto["regione"]}', S["H1sub"]))
-    story.append(Paragraph(
-        f'<font name="Courier">{porto["posizione"]["testo"]}</font>'
-        f'&nbsp;&nbsp;·&nbsp;&nbsp;Scheda v{porto["versione_scheda"]} — aggiornata {porto["aggiornato"]}', S["corpo"]))
-    story.append(Paragraph(
-        'Provenienza: <font color="#0E3A4C"><b>[C]</b></font> comandante (fonte di verità) · '
-        '<font color="#B0207A"><b>[W]</b></font> web verificato + data · '
-        '<font color="#7A2E58"><b>[C+W]</b></font> confermato da entrambi · '
-        '<font color="#5A6B78"><b>[P]</b></font> in attesa di conferma', S["legenda"]))
-    story.append(Spacer(1, 3))
+    def blocco_scalo(porto, rotta, primo):
+        """Scheda porto + rotta + waypoint per un singolo scalo."""
+        b=[]
+        sfx = "_" + porto["id"]
+        if not primo:
+            b.append(PageBreak())
+        b.append(H(f'Scheda porto — {porto["nome"]}', "porto"+sfx))
+        b.append(Paragraph(f'{porto["banchina_principale"]} — {porto["paese"]}, {porto["regione"]}', S["H1sub"]))
+        b.append(Paragraph(
+            f'<font name="Courier">{porto["posizione"]["testo"]}</font>'
+            f'&nbsp;&nbsp;·&nbsp;&nbsp;Scheda v{porto["versione_scheda"]} — aggiornata {porto["aggiornato"]}', S["corpo"]))
+        if primo:
+            b.append(Paragraph(
+                'Provenienza: <font color="#0E3A4C"><b>[C]</b></font> comandante (fonte di verità) · '
+                '<font color="#B0207A"><b>[W]</b></font> web verificato + data · '
+                '<font color="#7A2E58"><b>[C+W]</b></font> confermato da entrambi · '
+                '<font color="#5A6B78"><b>[P]</b></font> in attesa di conferma', S["legenda"]))
+        b.append(Spacer(1, 3))
 
-    story.append(H("Sequenza di manovra — arrivo da nord", "sequenza", "H2"))
-    seq_rows=[]
-    for s_ in porto["avvicinamento"]["sequenza"]:
-        wp = f'WP {s_["wp"]:02d}' if s_["wp"] else "\u2014"
-        evid = s_["tipo"] in ("velocita","manning","vts","manovra","ormeggio")
-        col = "#B0207A" if evid else "#1B2733"
-        seq_rows.append([
-            Paragraph(f'<font name="Courier" size="7.5" color="#5A6B78">{wp}</font>', S["cella"]),
-            Paragraph(f'<font color="{col}"><b>{s_["nome"]}</b></font>', S["seqNome"]),
-            Paragraph(s_["azione"], S["cella"])])
-    t=Table(seq_rows, colWidths=[14*mm, 42*mm, 118*mm])
-    t.setStyle(TableStyle([
-        ("VALIGN",(0,0),(-1,-1),"TOP"),
-        ("LINEBEFORE",(1,0),(1,-1),1.1,C_NAVY),
-        ("LINEBELOW",(0,0),(-1,-2),0.4,C_RIGA),
-        ("TOPPADDING",(0,0),(-1,-1),2.4),("BOTTOMPADDING",(0,0),(-1,-1),2.4),
-        ("LEFTPADDING",(1,0),(1,-1),6),("LEFTPADDING",(2,0),(2,-1),2),
-    ]))
-    story.append(t)
-    story.append(Spacer(1,3))
-    story.append(Paragraph(f'<b>Vento in approccio:</b> {porto["avvicinamento"]["vento"]}'+prov("C"), S["corpo"]))
+        # sequenza di manovra
+        b.append(H("Sequenza di manovra — arrivo", "sequenza"+sfx, "H2"))
+        seq_rows=[]
+        for s_ in porto["avvicinamento"]["sequenza"]:
+            wp = f'WP {s_["wp"]:02d}' if s_["wp"] else "\u2014"
+            evid = s_["tipo"] in ("velocita","manning","vts","manovra","ormeggio")
+            col = "#B0207A" if evid else "#1B2733"
+            seq_rows.append([
+                Paragraph(f'<font name="Courier" size="7.5" color="#5A6B78">{wp}</font>', S["cella"]),
+                Paragraph(f'<font color="{col}"><b>{s_["nome"]}</b></font>', S["seqNome"]),
+                Paragraph(s_["azione"], S["cella"])])
+        t=Table(seq_rows, colWidths=[14*mm, 42*mm, 118*mm])
+        t.setStyle(TableStyle([
+            ("VALIGN",(0,0),(-1,-1),"TOP"),
+            ("LINEBEFORE",(1,0),(1,-1),1.1,C_NAVY),
+            ("LINEBELOW",(0,0),(-1,-2),0.4,C_RIGA),
+            ("TOPPADDING",(0,0),(-1,-1),2.4),("BOTTOMPADDING",(0,0),(-1,-1),2.4),
+            ("LEFTPADDING",(1,0),(1,-1),6),("LEFTPADDING",(2,0),(2,-1),2),
+        ]))
+        b.append(t)
+        b.append(Spacer(1,3))
+        b.append(Paragraph(f'<b>Vento in approccio:</b> {porto["avvicinamento"]["vento"]}'+prov("C"), S["corpo"]))
 
-    for sez in porto["sezioni"]:
-        blocco=[H(sez["titolo"], "sez_"+re.sub(r"\W+","_",sez["titolo"].lower()), "H2"),
-                tabella_voci(sez["voci"], 34*mm, 140*mm)]
-        story.append(KeepTogether(blocco))
+        for sez in porto["sezioni"]:
+            chiave = "sez"+sfx+"_"+re.sub(r"\W+","_",sez["titolo"].lower())
+            b.append(KeepTogether([H(sez["titolo"], chiave, "H2"),
+                                   tabella_voci(sez["voci"], 34*mm, 140*mm)]))
 
-    # ---- note narrative su due colonne
-    story.append(H("Note narrative del comandante", "narrative", "H2"))
-    note = ["\u201C"+n+"\u201D" for n in porto["note_narrative"]]
-    meta = (len(note)+1)//2
-    col_sx, col_dx = note[:meta], note[meta:]
-    col_dx += [""]*(len(col_sx)-len(col_dx))
-    nrows=[[Paragraph(a, S["narr"]) if a else "", Paragraph(b, S["narr"]) if b else ""]
-           for a,b in zip(col_sx, col_dx)]
-    tn=Table(nrows, colWidths=[85*mm, 85*mm], hAlign="LEFT")
-    tn.setStyle(TableStyle([
-        ("VALIGN",(0,0),(-1,-1),"TOP"),
-        ("LINEBEFORE",(0,0),(0,-1),2.2,C_TERRA),
-        ("LINEBEFORE",(1,0),(1,-1),2.2,C_TERRA),
-        ("BACKGROUND",(0,0),(-1,-1),colors.Color(0.929,0.894,0.784, alpha=0.32)),
-        ("TOPPADDING",(0,0),(-1,-1),2.5),("BOTTOMPADDING",(0,0),(-1,-1),2.5),
-        ("LEFTPADDING",(0,0),(-1,-1),6),("RIGHTPADDING",(0,0),(-1,-1),5),
-    ]))
-    story.append(tn)
+        # note narrative su due colonne
+        b.append(H("Note narrative del comandante", "narrative"+sfx, "H2"))
+        note = ["\u201C"+n+"\u201D" for n in porto["note_narrative"]]
+        meta = (len(note)+1)//2
+        csx, cdx = note[:meta], note[meta:]
+        cdx += [""]*(len(csx)-len(cdx))
+        nrows=[[Paragraph(a, S["narr"]) if a else "", Paragraph(x, S["narr"]) if x else ""]
+               for a,x in zip(csx, cdx)]
+        tn=Table(nrows, colWidths=[85*mm, 85*mm], hAlign="LEFT")
+        tn.setStyle(TableStyle([
+            ("VALIGN",(0,0),(-1,-1),"TOP"),
+            ("LINEBEFORE",(0,0),(0,-1),2.2,C_TERRA),
+            ("LINEBEFORE",(1,0),(1,-1),2.2,C_TERRA),
+            ("BACKGROUND",(0,0),(-1,-1),colors.Color(0.929,0.894,0.784, alpha=0.32)),
+            ("TOPPADDING",(0,0),(-1,-1),2.5),("BOTTOMPADDING",(0,0),(-1,-1),2.5),
+            ("LEFTPADDING",(0,0),(-1,-1),6),("RIGHTPADDING",(0,0),(-1,-1),5),
+        ]))
+        b.append(tn)
 
-    # ---- rotta: cartine affiancate
-    story.append(H("Rotta Bergen \u2192 Haugesund", "rotta"))
-    story.append(Paragraph(
-        f'{rotta["distanza_nm"]:.2f} NM · {len(rotta["waypoints"])} waypoint · tratte {rotta["tipo_tratte"]} '
-        f'— trascrizione integrale del piano di bordo', S["H1sub"]))
+        # rotta: cartine affiancate, titolo e figure sempre sulla stessa pagina
+        blocco_rotta = [H(f'Rotta {rotta["titolo"]}', "rotta"+sfx)]
+        dist = f'{rotta["distanza_nm"]:.2f} NM'
+        if rotta.get("distanza_calcolata"): dist += " (calcolata)"
+        tratte = f' · tratte {rotta["tipo_tratte"]}' if rotta.get("tipo_tratte") else ""
+        blocco_rotta.append(Paragraph(f'{dist} · {len(rotta["waypoints"])} waypoint{tratte} '
+                           f'— trascrizione integrale del piano di bordo', S["H1sub"]))
+        note_rotta=[Paragraph("<b>Note di rotta</b>", S["corpo"])]
+        for n in rotta["note"]:
+            note_rotta.append(Paragraph("· "+n["testo"]+prov(n["fonte"], n.get("verificato")), S["fonte"]))
+        def mappa_img(suffisso, larghezza):
+            nome = f'_{rotta["id"]}_{suffisso}'
+            return Image(str(OUT/f"{nome}.png"), width=larghezza,
+                         height=larghezza*PROPORZIONI[nome])
+        cella_dx=[mappa_img("approccio", 80*mm), Spacer(1,5)] + note_rotta
+        t_mappe=Table([[mappa_img("overview", 62*mm), cella_dx]], colWidths=[66*mm, 108*mm])
+        t_mappe.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"TOP"),
+                                     ("LEFTPADDING",(0,0),(0,0),0),("RIGHTPADDING",(1,0),(1,0),0)]))
+        blocco_rotta.append(t_mappe)
+        b.append(KeepTogether(blocco_rotta))
 
-    note_rotta=[Paragraph("<b>Note di rotta</b>", S["corpo"])]
-    for n in rotta["note"]:
-        note_rotta.append(Paragraph("· "+n["testo"]+prov(n["fonte"], n.get("verificato")), S["fonte"]))
-    cella_dx=[Image(str(OUT/"_rotta_approccio.png"), width=80*mm, height=80*mm*(2.20/3.15)),
-              Spacer(1,5)] + note_rotta
-    t_mappe=Table([[Image(str(OUT/"_rotta_overview.png"), width=62*mm, height=62*mm*(3.14/2.44)), cella_dx]],
-                  colWidths=[66*mm, 108*mm])
-    t_mappe.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"TOP"),
-                                 ("LEFTPADDING",(0,0),(0,0),0),("RIGHTPADDING",(1,0),(1,0),0)]))
-    story.append(t_mappe)
-
-    # ---- piano waypoint
-    story.append(PageBreak())
-    story.append(H("Piano waypoint — trascrizione di bordo", "waypoint"))
-    story.append(Paragraph("Coordinate e dati riportati esattamente come nel piano di bordo. "
+        # piano waypoint
+        b.append(PageBreak())
+        b.append(H("Piano waypoint — trascrizione di bordo", "waypoint"+sfx))
+        b.append(Paragraph("Coordinate e dati riportati esattamente come nel piano di bordo. "
                            "In rosa i waypoint con annotazione operativa.", S["H1sub"]))
-    intest=["N.","NOME","R [NM]","LAT","LON","BWW\u00B0","D.ENR","DIST","SAIL"]
-    wrows=[intest]
-    for w in rotta["waypoints"]:
-        wrows.append([str(w["n"]), w["nome"],
-                      f'{w["raggio_nm"]:.2f}' if w["raggio_nm"] is not None else "\u2014",
-                      w["lat_txt"], w["lon_txt"],
-                      f'{w["bww"]:.1f}' if w["bww"] is not None else "\u2014",
-                      f'{w["dist_enr"]:.2f}' if w["dist_enr"] is not None else "\u2014",
-                      f'{w["dist"]:.2f}' if w["dist"] is not None else "\u2014",
-                      w["sail"] or "\u2014"])
-    tw=Table(wrows, colWidths=[8*mm,52*mm,13*mm,25*mm,26*mm,13*mm,14*mm,13*mm,10*mm], repeatRows=1)
-    stile=[("FONTNAME",(0,0),(-1,-1),"Courier"),("FONTSIZE",(0,0),(-1,-1),7),
-           ("FONTNAME",(0,0),(-1,0),"Courier-Bold"),("FONTSIZE",(0,0),(-1,0),7),
-           ("BACKGROUND",(0,0),(-1,0),C_NAVY),("TEXTCOLOR",(0,0),(-1,0),C_BUFF),
-           ("LINEBELOW",(0,1),(-1,-1),0.3,C_RIGA),
-           ("TOPPADDING",(0,0),(-1,-1),0.9),("BOTTOMPADDING",(0,0),(-1,-1),0.9),
-           ("LEFTPADDING",(0,0),(-1,-1),3),("RIGHTPADDING",(0,0),(-1,-1),3),
-           ("VALIGN",(0,0),(-1,-1),"MIDDLE")]
-    for i,w in enumerate(rotta["waypoints"], start=1):
-        if w.get("nota"):
-            stile.append(("BACKGROUND",(0,i),(-1,i), colors.Color(0.69,0.125,0.478, alpha=0.08)))
-    tw.setStyle(TableStyle(stile))
-    story.append(tw)
+        ETI={"n":"N.","nome":"NOME","raggio_nm":"R [NM]","lat_txt":"LAT","lon_txt":"LON",
+             "bww":"BWW\u00B0","dist_enr":"D.ENR","dist":"DIST","sail":"SAIL","ap":"AP"}
+        LARG={"n":8,"nome":56,"raggio_nm":13,"lat_txt":25,"lon_txt":26,
+              "bww":13,"dist_enr":14,"dist":13,"sail":10,"ap":9}
+        FMT={"raggio_nm":"{:.2f}","bww":"{:.1f}","dist_enr":"{:.2f}","dist":"{:.2f}"}
+        cols=rotta["colonne"]
+        larg=[LARG[c] for c in cols]
+        scala=174.0/sum(larg)
+        wrows=[[ETI[c] for c in cols]]
+        for w in rotta["waypoints"]:
+            riga=[]
+            for c in cols:
+                v=w.get(c)
+                riga.append("\u2014" if v in (None,"") else (FMT[c].format(v) if c in FMT else str(v)))
+            wrows.append(riga)
+        tw=Table(wrows, colWidths=[x*scala*mm for x in larg], repeatRows=1)
+        stile=[("FONTNAME",(0,0),(-1,-1),"Courier"),("FONTSIZE",(0,0),(-1,-1),7),
+               ("FONTNAME",(0,0),(-1,0),"Courier-Bold"),("FONTSIZE",(0,0),(-1,0),7),
+               ("BACKGROUND",(0,0),(-1,0),C_NAVY),("TEXTCOLOR",(0,0),(-1,0),C_BUFF),
+               ("LINEBELOW",(0,1),(-1,-1),0.3,C_RIGA),
+               ("TOPPADDING",(0,0),(-1,-1),0.9),("BOTTOMPADDING",(0,0),(-1,-1),0.9),
+               ("LEFTPADDING",(0,0),(-1,-1),3),("RIGHTPADDING",(0,0),(-1,-1),3),
+               ("VALIGN",(0,0),(-1,-1),"MIDDLE")]
+        for i,w in enumerate(rotta["waypoints"], start=1):
+            if w.get("nota"):
+                stile.append(("BACKGROUND",(0,i),(-1,i), colors.Color(0.69,0.125,0.478, alpha=0.08)))
+        tw.setStyle(TableStyle(stile))
+        b.append(tw)
 
-    story.append(H("Annotazioni sui waypoint evidenziati", "annotazioni", "H2"))
-    ann=[f'<font name="Courier" size="7.5" color="#B0207A">WP {w["n"]:02d}</font>&nbsp; {w["nota"]}'
-         for w in rotta["waypoints"] if w.get("nota")]
-    meta=(len(ann)+1)//2
-    sx, dx = ann[:meta], ann[meta:]
-    dx += [""]*(len(sx)-len(dx))
-    ta=Table([[Paragraph(a, S["cella"]) if a else "", Paragraph(b, S["cella"]) if b else ""]
-              for a,b in zip(sx,dx)], colWidths=[85*mm,85*mm], hAlign="LEFT")
-    ta.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"TOP"),
-                            ("TOPPADDING",(0,0),(-1,-1),1.6),("BOTTOMPADDING",(0,0),(-1,-1),1.6),
-                            ("LEFTPADDING",(0,0),(-1,-1),0),("RIGHTPADDING",(0,0),(-1,-1),6)]))
-    story.append(ta)
+        b.append(H("Annotazioni sui waypoint evidenziati", "annotazioni"+sfx, "H2"))
+        ann=[f'<font name="Courier" size="7.5" color="#B0207A">WP {w["n"]:02d}</font>&nbsp; {w["nota"]}'
+             for w in rotta["waypoints"] if w.get("nota")]
+        meta=(len(ann)+1)//2
+        sx, dx = ann[:meta], ann[meta:]
+        dx += [""]*(len(sx)-len(dx))
+        ta=Table([[Paragraph(a, S["cella"]) if a else "", Paragraph(x, S["cella"]) if x else ""]
+                  for a,x in zip(sx,dx)], colWidths=[85*mm,85*mm], hAlign="LEFT")
+        ta.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"TOP"),
+                                ("TOPPADDING",(0,0),(-1,-1),1.6),("BOTTOMPADDING",(0,0),(-1,-1),1.6),
+                                ("LEFTPADDING",(0,0),(-1,-1),0),("RIGHTPADDING",(0,0),(-1,-1),6)]))
+        b.append(ta)
 
-    # ---- fonti e changelog affiancati
+        # fonti dello scalo
+        titolo_fonti = H(f'Fonti e verifiche — {porto["nome"]}', "fonti"+sfx, "H2")
+        f_par=[Paragraph(f'· <link href="{f_["url"]}" color="#0E3A4C"><u>{f_["label"]}</u></link> '
+                         f'<font name="Courier" size="7" color="#5A6B78">{data_breve(f_["verificato"])}</font>',
+                         S["fonte"]) for f_ in porto["fonti"]]
+        meta=(len(f_par)+1)//2
+        fsx, fdx = f_par[:meta], f_par[meta:]
+        fdx += [""]*(len(fsx)-len(fdx))
+        tf=Table([[a,x] for a,x in zip(fsx,fdx)], colWidths=[85*mm,85*mm], hAlign="LEFT")
+        tf.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"TOP"),
+                                ("TOPPADDING",(0,0),(-1,-1),1.8),("BOTTOMPADDING",(0,0),(-1,-1),1.8),
+                                ("LEFTPADDING",(0,0),(-1,-1),0),("RIGHTPADDING",(0,0),(-1,-1),6)]))
+        b.append(KeepTogether([titolo_fonti, tf]))
+        return b
+
+    for i,(porto, rotta) in enumerate(COPPIE):
+        story += blocco_scalo(porto, rotta, primo=(i==0))
+
+    # ---- registro versioni
     story.append(PageBreak())
-    story.append(H("Fonti e verifiche", "fonti"))
-    story.append(Paragraph("Integrazioni web esclusivamente nautiche, verificate alla data indicata. "
-                           "In caso di discrepanza prevale il dato del comandante.", S["H1sub"]))
-    f_par=[Paragraph(f'· <link href="{f_["url"]}" color="#0E3A4C"><u>{f_["label"]}</u></link> '
-                     f'<font name="Courier" size="7" color="#5A6B78">{data_breve(f_["verificato"])}</font>',
-                     S["fonte"]) for f_ in porto["fonti"]]
-    meta=(len(f_par)+1)//2
-    fsx, fdx = f_par[:meta], f_par[meta:]
-    fdx += [""]*(len(fsx)-len(fdx))
-    tf=Table([[a,b] for a,b in zip(fsx,fdx)], colWidths=[85*mm,85*mm], hAlign="LEFT")
-    tf.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"TOP"),
-                            ("TOPPADDING",(0,0),(-1,-1),1.8),("BOTTOMPADDING",(0,0),(-1,-1),1.8),
-                            ("LEFTPADDING",(0,0),(-1,-1),0),("RIGHTPADDING",(0,0),(-1,-1),6)]))
-    story.append(tf)
-
-    story.append(H("Registro versioni", "changelog", "H2"))
+    story.append(H("Registro versioni", "changelog"))
+    story.append(Paragraph("Ogni modifica ai dati incrementa la versione e viene registrata qui.", S["H1sub"]))
     voci_log=[]
     for riga in (BASE/"CHANGELOG.md").read_text(encoding="utf-8").splitlines():
         riga=riga.strip()
@@ -476,11 +587,12 @@ def build_pdf():
     meta=(len(voci_log)+1)//2
     lsx, ldx = voci_log[:meta], voci_log[meta:]
     ldx += [""]*(len(lsx)-len(ldx))
-    tl=Table([[a,b] for a,b in zip(lsx,ldx)], colWidths=[85*mm,85*mm], hAlign="LEFT")
+    tl=Table([[a,x] for a,x in zip(lsx,ldx)], colWidths=[85*mm,85*mm], hAlign="LEFT")
     tl.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"TOP"),
                             ("TOPPADDING",(0,0),(-1,-1),1.4),("BOTTOMPADDING",(0,0),(-1,-1),1.4),
                             ("LEFTPADDING",(0,0),(-1,-1),0),("RIGHTPADDING",(0,0),(-1,-1),6)]))
     story.append(tl)
+
 
     doc.multiBuild(story)
     print("PDF   ->", pdf_path)

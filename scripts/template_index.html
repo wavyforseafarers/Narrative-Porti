@@ -49,11 +49,29 @@ html[data-theme="notte"] .topbar{background:#0D1319; color:#C6CDD6; border-botto
 .brand{font-family:"IBM Plex Mono", monospace; font-weight:600; letter-spacing:.14em; font-size:14px}
 .brand small{display:block; letter-spacing:.28em; font-size:9px; opacity:.75; font-weight:400}
 .topbar .spazio{flex:1}
+.sel-scalo{display:flex; gap:6px; flex-wrap:wrap}
+.sel-scalo button{
+  font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em;
+  background:transparent; color:inherit; border:1px solid rgba(246,240,224,.4);
+  border-radius:3px; padding:5px 10px; cursor:pointer;
+}
+html[data-theme="notte"] .sel-scalo button{border-color:rgba(198,205,214,.35)}
+.sel-scalo button:hover{background:rgba(255,255,255,.08)}
+.sel-scalo button[aria-current="true"]{background:var(--magenta); border-color:var(--magenta); color:#fff}
 .chip-ver{
   font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em;
   border:1px solid rgba(246,240,224,.4); border-radius:3px; padding:3px 8px;
 }
-html[data-theme="notte"] .chip-ver{border-color:rgba(198,205,214,.35)}
+html[data-theme="notte"] .sel-scalo{display:flex; gap:6px; flex-wrap:wrap}
+.sel-scalo button{
+  font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em;
+  background:transparent; color:inherit; border:1px solid rgba(246,240,224,.4);
+  border-radius:3px; padding:5px 10px; cursor:pointer;
+}
+html[data-theme="notte"] .sel-scalo button{border-color:rgba(198,205,214,.35)}
+.sel-scalo button:hover{background:rgba(255,255,255,.08)}
+.sel-scalo button[aria-current="true"]{background:var(--magenta); border-color:var(--magenta); color:#fff}
+.chip-ver{border-color:rgba(198,205,214,.35)}
 .toggle-notte{
   font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.1em;
   background:transparent; color:inherit; border:1px solid rgba(246,240,224,.4);
@@ -191,6 +209,7 @@ html[data-theme="notte"] .dato-rotta .valore-grande{color:#9FB6C2}
 <header class="topbar">
   <div class="brand">NARRATIVE PORTI<small>DATABASE ARRIVI · NAVIGAZIONE</small></div>
   <div class="spazio"></div>
+  <nav class="sel-scalo" id="selScalo" aria-label="Scelta dello scalo"></nav>
   <span class="chip-ver" id="chipVersione">v—</span>
   <button class="toggle-notte" id="toggleNotte" type="button" aria-pressed="false">PLANCIA NOTTE</button>
 </header>
@@ -307,21 +326,27 @@ function renderPorto(p, rotta){
   sr.append(el('h2','titolo-sezione', `Rotta ${esc(rotta.titolo)} — piano waypoint`));
   const riep = el('div','riepilogo-rotta');
   riep.append(
-    el('div','dato-rotta', `<div class="valore-grande">${rotta.distanza_nm.toFixed(2)}</div><div class="etichetta-piccola">Distanza NM</div>`),
+    el('div','dato-rotta', `<div class="valore-grande">${rotta.distanza_nm.toFixed(2)}</div><div class="etichetta-piccola">Distanza NM${rotta.distanza_calcolata?' · calcolata':''}</div>`),
     el('div','dato-rotta', `<div class="valore-grande">${rotta.waypoints.length}</div><div class="etichetta-piccola">Waypoint</div>`),
-    el('div','dato-rotta', `<div class="valore-grande">${esc(rotta.tipo_tratte)}</div><div class="etichetta-piccola">Tratte</div>`)
+    rotta.tipo_tratte ? el('div','dato-rotta', `<div class="valore-grande">${esc(rotta.tipo_tratte)}</div><div class="etichetta-piccola">Tratte</div>`) : el('span','')
   );
   sr.append(riep);
+  const ETI={n:'N.',nome:'Nome',raggio_nm:'R [NM]',lat_txt:'Lat',lon_txt:'Lon',
+             bww:'BWW°',dist_enr:'D.Enr',dist:'Dist',sail:'Sail',ap:'AP'};
+  const DEC={raggio_nm:2,bww:1,dist_enr:2,dist:2};
+  const cols = rotta.colonne || ['n','nome','raggio_nm','lat_txt','lon_txt','bww','dist_enr','dist','sail'];
   const wrap = el('div','scorri-x');
   const tb = el('table','wp');
-  tb.innerHTML = `<thead><tr><th>N.</th><th>Nome</th><th>R [NM]</th><th>Lat</th><th>Lon</th><th>BWW°</th><th>D.Enr</th><th>Dist</th><th>Nota</th></tr></thead>`;
+  tb.innerHTML = `<thead><tr>${cols.map(c=>`<th>${ETI[c]||c}</th>`).join('')}<th>Nota</th></tr></thead>`;
   const tbody = document.createElement('tbody');
   rotta.waypoints.forEach(w=>{
     const tr = el('tr', w.nota ? 'evidenzia' : '');
-    tr.innerHTML = `<td>${w.n}</td><td>${esc(w.nome)}</td><td>${w.raggio_nm!=null?w.raggio_nm.toFixed(2):'—'}</td>`+
-      `<td>${esc(w.lat_txt)}</td><td>${esc(w.lon_txt)}</td>`+
-      `<td>${w.bww!=null?w.bww.toFixed(1):'—'}</td><td>${w.dist_enr!=null?w.dist_enr.toFixed(2):'—'}</td><td>${w.dist!=null?w.dist.toFixed(2):'—'}</td>`+
-      `<td class="nota-wp">${w.nota?esc(w.nota):''}</td>`;
+    const celle = cols.map(c=>{
+      const v = w[c];
+      if(v===null || v===undefined || v==='') return '<td>—</td>';
+      return `<td>${DEC[c]!=null ? Number(v).toFixed(DEC[c]) : esc(v)}</td>`;
+    }).join('');
+    tr.innerHTML = celle + `<td class="nota-wp">${w.nota?esc(w.nota):''}</td>`;
     tbody.append(tr);
   });
   tb.append(tbody); wrap.append(tb); sr.append(wrap);
@@ -356,6 +381,9 @@ function initMappa(rotta, porto){
   const punti = rotta.waypoints.map(w=>({ ...w, lat:ddmToDec(w.lat_txt), lon:ddmToDec(w.lon_txt) }));
   const latlngs = punti.map(p=>[p.lat, p.lon]);
 
+  const contenitore = document.getElementById('mappa');
+  contenitore.innerHTML=''; contenitore.style.display='';
+  document.getElementById('avvisoOffline').style.display='none';
   mappa = L.map('mappa', {zoomControl:true});
   const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap'});
   const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom:19, attribution:'© Esri World Imagery'});
@@ -415,17 +443,38 @@ document.getElementById('toggleNotte').addEventListener('click', function(){
 
 /* ---------- avvio ---------- */
 (function(){
-  const porto = DATA.porti[0];
-  const rotta = DATA.rotte[0];
+  const scali = DATA.rotte.map(r=>({
+    rotta: r,
+    porto: DATA.porti.find(p=>p.id===r.porto_arrivo) || DATA.porti[0]
+  })).sort((a,b)=> (a.porto.aggiornato||'').localeCompare(b.porto.aggiornato||''));
+
   document.getElementById('chipVersione').textContent = 'v'+DATA.meta.versione;
   document.getElementById('timbro').textContent =
-    `NARRATIVE PORTI v${DATA.meta.versione} · generato il ${DATA.meta.generato} da data/ · repo: ${DATA.meta.repo}`;
-  renderPorto(porto, rotta);
-  try{ initMappa(rotta, porto); }
-  catch(e){
-    document.getElementById('mappa').style.display='none';
-    document.getElementById('avvisoOffline').style.display='block';
+    `NARRATIVE PORTI v${DATA.meta.versione} · ${scali.length} ${scali.length===1?'scalo':'scali'} · generato il ${DATA.meta.generato} da data/ · repo: ${DATA.meta.repo}`;
+
+  const nav = document.getElementById('selScalo');
+  const bottoni = scali.map((s,i)=>{
+    const b = el('button', null, esc(s.porto.nome.toUpperCase()));
+    b.type='button';
+    b.addEventListener('click', ()=> mostra(i));
+    nav.append(b);
+    return b;
+  });
+
+  function mostra(i){
+    const {porto, rotta} = scali[i];
+    bottoni.forEach((b,j)=> b.setAttribute('aria-current', String(j===i)));
+    document.getElementById('colonnaScheda').innerHTML='';
+    renderPorto(porto, rotta);
+    if(mappa){ mappa.remove(); mappa=null; }
+    try{ initMappa(rotta, porto); }
+    catch(e){
+      document.getElementById('mappa').style.display='none';
+      document.getElementById('avvisoOffline').style.display='block';
+    }
+    window.scrollTo({top:0, behavior:'smooth'});
   }
+  mostra(0);
 })();
 </script>
 </body>
