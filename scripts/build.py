@@ -113,14 +113,14 @@ def build_cartine():
          (13,"POFF FEDJE",7,3,"left"), (14,"TSS OUT",-6,5,"right"),
          (16,"12 NM OUT",-7,-3,"right"), (17,"12 NM IN",-8,0,"right"),
          (19,"PORT LIMIT",-8,4,"right"), (25,"HAUGESUND",8,-2,"left")],
-        "Rotta Bergen → Haugesund — 132.61 NM · 25 WP", (2.60, 3.35))
+        "Rotta Bergen → Haugesund — 132.61 NM · 25 WP", (2.44, 3.14))
     chartlet(r, OUT/"_rotta_approccio.png",
         (59.345, 59.555, 4.86, 5.34), 0.0008,
         [(19,"WP19 · PORT LIMIT",6,6,"left"), (20,"WP20 · GRUNNANE 11→7 kn",6,8,"left"),
          (21,"WP21 · SBE / RED MANNING",-9,11,"right"), (22,"WP22 · Kråkeflua 8 kn",-9,-13,"right"),
          (23,"WP23 · GALVEN",-11,-2,"right"), (24,"WP24 · GALTEN — acc. SX ROT>30°/min",9,-9,"left"),
          (25,"GARPESKJÆRSKAIEN",9,6,"left")],
-        "Approccio finale — sequenza operativa", (2.99, 2.09),
+        "Approccio finale — sequenza operativa", (3.15, 2.20),
         scava={"da_wp": 21, "raggio_deg": 0.0030})
 
 # ---------------------------------------------------------------- PDF
@@ -172,7 +172,7 @@ def build_pdf():
         if cur: righe.append(cur)
         return righe
 
-    def riga_chip(canv, x, y, voci, size=7.4, gap=4*mm):
+    def riga_chip(canv, x, y, voci, size=7.8, gap=4*mm):
         """Disegna chip affiancati misurando ogni segmento: niente sovrapposizioni."""
         for etichetta, descrizione, col in voci:
             canv.setFont("Helvetica-Bold", size); canv.setFillColor(col)
@@ -186,36 +186,36 @@ def build_pdf():
     def pagina_contenuto(canv, doc):
         canv.saveState()
         W,H = A4
-        canv.setFillColor(C_NAVY); canv.rect(0, H-13*mm, W, 13*mm, 1, 0)
-        canv.setFillColor(C_MAG);  canv.rect(0, H-14*mm, W, 1*mm, 1, 0)
-        testo_sp(canv, 18*mm, H-8.6*mm, "NARRATIVE PORTI", "Helvetica-Bold", 8, 1.8, C_BUFF)
-        canv.setFont("Helvetica", 7.6); canv.setFillColor(colors.HexColor("#B9CFDB"))
-        canv.drawRightString(192*mm, H-8.6*mm, f"Haugesund · Bergen \u2192 Haugesund   |   v{VERSIONE} · {OGGI}")
+        canv.setFillColor(C_NAVY); canv.rect(0, H-13*mm, W, 13*mm, stroke=0, fill=1)
+        canv.setFillColor(C_MAG);  canv.rect(0, H-14*mm, W, 1*mm, stroke=0, fill=1)
+        testo_sp(canv, 18*mm, H-8.5*mm, "NARRATIVE PORTI", "Helvetica-Bold", 8.5, 1.8, C_BUFF)
+        canv.setFont("Helvetica", 8.5); canv.setFillColor(C_BUFF)
+        canv.drawRightString(192*mm, H-8.5*mm, f"Haugesund  ·  Bergen \u2192 Haugesund  ·  v{VERSIONE}")
         canv.setStrokeColor(C_RIGA); canv.setLineWidth(0.6)
         canv.line(18*mm, 12.5*mm, 192*mm, 12.5*mm)
-        canv.setFont("Helvetica-Oblique", 6.6); canv.setFillColor(C_SEC)
+        canv.setFont("Helvetica-Oblique", 7); canv.setFillColor(C_SEC)
         canv.drawString(18*mm, 9*mm, "Documento di supporto — non sostituisce carte e pubblicazioni ufficiali · Not for navigation")
-        canv.setFont("Helvetica-Bold", 7.6); canv.setFillColor(C_NAVY)
-        canv.drawRightString(192*mm, 9*mm, f"{doc.page}")
+        canv.setFont("Helvetica-Bold", 8.5); canv.setFillColor(C_NAVY)
+        canv.drawRightString(192*mm, 8.8*mm, f"{doc.page}")
         canv.restoreState()
 
     def pagina_copertina(canv, doc):
         canv.saveState()
         W,H = A4
-        canv.setFillColor(C_BUFF); canv.rect(0,0,W,H,1,0)
+        canv.setFillColor(C_BUFF); canv.rect(0, 0, W, H, stroke=0, fill=1)
         canv.setFillColor(colors.Color(0.055,0.227,0.298, alpha=0.05))
         step=9*mm; y=step
         while y<H:
             x=step
             while x<W:
-                canv.circle(x,y,0.45,0,1); x+=step
+                canv.circle(x, y, 0.45, stroke=0, fill=1); x+=step
             y+=step
         # banda di testata
-        canv.setFillColor(C_NAVY); canv.rect(0, H-70*mm, W, 70*mm, 1, 0)
-        canv.setFillColor(C_MAG);  canv.rect(0, H-71.6*mm, W, 1.6*mm, 1, 0)
+        canv.setFillColor(C_NAVY); canv.rect(0, H-70*mm, W, 70*mm, stroke=0, fill=1)
+        canv.setFillColor(C_MAG);  canv.rect(0, H-71.6*mm, W, 1.6*mm, stroke=0, fill=1)
         testo_sp(canv, 20*mm, H-33*mm, "NARRATIVE PORTI", "Helvetica-Bold", 33, 4, C_BUFF)
         testo_sp(canv, 20.5*mm, H-42*mm, "DATABASE ARRIVI · NAVIGAZIONE", "Helvetica", 10.5, 2.2, C_BUFF)
-        canv.setFillColor(colors.HexColor("#B9CFDB")); canv.setFont("Courier", 9)
+        canv.setFillColor(C_BUFF); canv.setFont("Courier", 9)
         canv.drawString(20.5*mm, H-56*mm, f"VERSIONE {VERSIONE}   ·   GENERATO {OGGI}")
         canv.drawString(20.5*mm, H-62*mm, f"FONTE DATI: data/ — {REPO}")
         # rotta
@@ -241,18 +241,18 @@ def build_pdf():
         h_box = 13*mm + n_righe*4.6*mm + (len(righe)-1)*2.4*mm + 15*mm
         y_top = H-132*mm
         canv.setStrokeColor(C_NAVY); canv.setLineWidth(0.8)
-        canv.rect(x_box, y_top-h_box, w_box, h_box, 1, 0)
+        canv.rect(x_box, y_top-h_box, w_box, h_box, stroke=1, fill=0)
         testo_sp(canv, 26*mm, y_top-8*mm, "CONTENUTO DI QUESTA VERSIONE", "Helvetica-Bold", 8.5, 2, C_NAVY)
         y = y_top-16*mm
         for blocco in blocchi:
-            canv.setFillColor(C_MAG); canv.circle(27.5*mm, y+1.2*mm, 1.05*mm, 0, 1)
+            canv.setFillColor(C_MAG); canv.circle(27.5*mm, y+1.2*mm, 1.05*mm, stroke=0, fill=1)
             canv.setFillColor(C_INK); canv.setFont("Helvetica", 9)
             for i, riga in enumerate(blocco):
                 canv.drawString(x_testo, y - i*4.6*mm, riga)
             y -= len(blocco)*4.6*mm + 2.4*mm
         # legenda provenienza — posizioni misurate
         y_leg = y_top - h_box + 9.5*mm
-        canv.setFont("Helvetica", 7.6); canv.setFillColor(C_SEC)
+        canv.setFont("Helvetica", 7.8); canv.setFillColor(C_SEC)
         canv.drawString(26*mm, y_leg+5.5*mm, "Provenienza dei dati riportata accanto a ogni voce:")
         riga_chip(canv, 26*mm, y_leg, [
             ("[C]",   "comandante (fonte di verità)", C_NAVY),
@@ -277,30 +277,32 @@ def build_pdf():
         PageTemplate(id="Contenuto", frames=[frame], onPage=pagina_contenuto),
     ])
 
+    # Scala tipografica: 6 corpi netti (15 / 11 / 10 / 9 / 8.5 / 7.5) — niente
+    # differenze da mezzo punto, che rendono il testo incoerente senza motivo.
     S = {
-      "H1": ParagraphStyle("H1", fontName="Helvetica-Bold", fontSize=15.5, leading=19,
+      "H1": ParagraphStyle("H1", fontName="Helvetica-Bold", fontSize=15, leading=18.5,
                            textColor=C_NAVY, spaceBefore=1, spaceAfter=2),
-      "H1sub": ParagraphStyle("H1sub", fontName="Times-Italic", fontSize=11.5, leading=14,
+      "H1sub": ParagraphStyle("H1sub", fontName="Times-Italic", fontSize=11, leading=13.5,
                            textColor=C_SEC, spaceAfter=5),
       "H2": ParagraphStyle("H2", fontName="Helvetica-Bold", fontSize=10, leading=12.5,
-                           textColor=C_NAVY, spaceBefore=9, spaceAfter=4),
-      "corpo": ParagraphStyle("corpo", fontName="Helvetica", fontSize=8.8, leading=12, textColor=C_INK),
-      "legenda": ParagraphStyle("legenda", fontName="Helvetica", fontSize=7.4, leading=10, textColor=C_SEC),
-      "cella": ParagraphStyle("cella", fontName="Helvetica", fontSize=8.3, leading=10.5, textColor=C_INK),
-      "cellaEt": ParagraphStyle("cellaEt", fontName="Helvetica-Bold", fontSize=8.1, leading=10.4, textColor=C_SEC),
+                           textColor=C_NAVY, spaceBefore=7, spaceAfter=3.5),
+      "corpo": ParagraphStyle("corpo", fontName="Helvetica", fontSize=9, leading=11.8, textColor=C_INK),
+      "cella": ParagraphStyle("cella", fontName="Helvetica", fontSize=8.5, leading=10.6, textColor=C_INK),
+      "cellaEt": ParagraphStyle("cellaEt", fontName="Helvetica-Bold", fontSize=8.5, leading=10.6, textColor=C_NAVY),
       "seqNome": ParagraphStyle("seqNome", fontName="Helvetica-Bold", fontSize=8.5, leading=10.6, textColor=C_INK),
-      "narr": ParagraphStyle("narr", fontName="Helvetica-Oblique", fontSize=7.9, leading=10, textColor=C_INK),
-      "fonte": ParagraphStyle("fonte", fontName="Helvetica", fontSize=7.8, leading=10.2, textColor=C_INK),
+      "narr": ParagraphStyle("narr", fontName="Helvetica-Oblique", fontSize=8.5, leading=10.8, textColor=C_INK),
+      "fonte": ParagraphStyle("fonte", fontName="Helvetica", fontSize=8.5, leading=10.6, textColor=C_INK),
+      "legenda": ParagraphStyle("legenda", fontName="Helvetica", fontSize=7.5, leading=9.8, textColor=C_SEC),
       "toc0": ParagraphStyle("toc0", fontName="Helvetica-Bold", fontSize=9, leading=11.6,
                              textColor=C_NAVY, spaceBefore=1.5, spaceAfter=0),
-      "toc1": ParagraphStyle("toc1", fontName="Helvetica", fontSize=8.2, leading=10.4,
+      "toc1": ParagraphStyle("toc1", fontName="Helvetica", fontSize=8.5, leading=10.6,
                              leftIndent=11, textColor=C_INK, spaceBefore=0, spaceAfter=0),
     }
     COL_PROV = {"C":"#0E3A4C","W":"#B0207A","CW":"#7A2E58","P":"#5A6B78"}
     def prov(f_, ver=None):
         lab = {"C":"C","W":"W","CW":"C+W","P":"P"}[f_]
         if f_ in ("W","CW") and ver: lab += "\u00A0" + data_breve(ver)
-        return f'&nbsp;<font size="6.4" color="{COL_PROV[f_]}"><b>[{lab}]</b></font>'
+        return f'&nbsp;<font size="7" color="{COL_PROV[f_]}"><b>[{lab}]</b></font>'
     def H(testo, key, stile="H1"):
         p=Paragraph(testo, S[stile]); p._bm=key; return p
 
@@ -308,14 +310,14 @@ def build_pdf():
         rows=[]
         for v in voci:
             val = v["v"] + prov(v["fonte"], v.get("verificato"))
-            if v.get("nota"): val += f'<br/><font size="7.2" color="#5A6B78">{v["nota"]}</font>'
+            if v.get("nota"): val += f'<br/><font size="7.5" color="#5A6B78">{v["nota"]}</font>'
             rows.append([Paragraph(v["t"], S["cellaEt"]), Paragraph(val, S["cella"])])
         t=Table(rows, colWidths=[w_et, w_val])
         t.setStyle(TableStyle([
             ("VALIGN",(0,0),(-1,-1),"TOP"),
             ("LINEBELOW",(0,0),(-1,-2),0.4,C_RIGA),
             ("ROWBACKGROUNDS",(0,0),(-1,-1),[None, colors.Color(0.055,0.227,0.298, alpha=0.035)]),
-            ("TOPPADDING",(0,0),(-1,-1),2.2),("BOTTOMPADDING",(0,0),(-1,-1),2.2),
+            ("TOPPADDING",(0,0),(-1,-1),1.9),("BOTTOMPADDING",(0,0),(-1,-1),1.9),
             ("LEFTPADDING",(0,0),(-1,-1),3),("RIGHTPADDING",(0,0),(-1,-1),3),
         ]))
         return t
@@ -348,7 +350,7 @@ def build_pdf():
         evid = s_["tipo"] in ("velocita","manning","vts","manovra","ormeggio")
         col = "#B0207A" if evid else "#1B2733"
         seq_rows.append([
-            Paragraph(f'<font name="Courier" size="7.4" color="#5A6B78">{wp}</font>', S["cella"]),
+            Paragraph(f'<font name="Courier" size="7.5" color="#5A6B78">{wp}</font>', S["cella"]),
             Paragraph(f'<font color="{col}"><b>{s_["nome"]}</b></font>', S["seqNome"]),
             Paragraph(s_["azione"], S["cella"])])
     t=Table(seq_rows, colWidths=[14*mm, 42*mm, 118*mm])
@@ -382,7 +384,7 @@ def build_pdf():
         ("LINEBEFORE",(0,0),(0,-1),2.2,C_TERRA),
         ("LINEBEFORE",(1,0),(1,-1),2.2,C_TERRA),
         ("BACKGROUND",(0,0),(-1,-1),colors.Color(0.929,0.894,0.784, alpha=0.32)),
-        ("TOPPADDING",(0,0),(-1,-1),3),("BOTTOMPADDING",(0,0),(-1,-1),3),
+        ("TOPPADDING",(0,0),(-1,-1),2.5),("BOTTOMPADDING",(0,0),(-1,-1),2.5),
         ("LEFTPADDING",(0,0),(-1,-1),6),("RIGHTPADDING",(0,0),(-1,-1),5),
     ]))
     story.append(tn)
@@ -396,10 +398,10 @@ def build_pdf():
     note_rotta=[Paragraph("<b>Note di rotta</b>", S["corpo"])]
     for n in rotta["note"]:
         note_rotta.append(Paragraph("· "+n["testo"]+prov(n["fonte"], n.get("verificato")), S["fonte"]))
-    cella_dx=[Image(str(OUT/"_rotta_approccio.png"), width=76*mm, height=76*mm*(2.09/2.99)),
+    cella_dx=[Image(str(OUT/"_rotta_approccio.png"), width=80*mm, height=80*mm*(2.20/3.15)),
               Spacer(1,5)] + note_rotta
-    t_mappe=Table([[Image(str(OUT/"_rotta_overview.png"), width=66*mm, height=66*mm*(3.35/2.60)), cella_dx]],
-                  colWidths=[70*mm, 104*mm])
+    t_mappe=Table([[Image(str(OUT/"_rotta_overview.png"), width=62*mm, height=62*mm*(3.14/2.44)), cella_dx]],
+                  colWidths=[66*mm, 108*mm])
     t_mappe.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"TOP"),
                                  ("LEFTPADDING",(0,0),(0,0),0),("RIGHTPADDING",(1,0),(1,0),0)]))
     story.append(t_mappe)
@@ -420,8 +422,8 @@ def build_pdf():
                       f'{w["dist"]:.2f}' if w["dist"] is not None else "\u2014",
                       w["sail"] or "\u2014"])
     tw=Table(wrows, colWidths=[8*mm,52*mm,13*mm,25*mm,26*mm,13*mm,14*mm,13*mm,10*mm], repeatRows=1)
-    stile=[("FONTNAME",(0,0),(-1,-1),"Courier"),("FONTSIZE",(0,0),(-1,-1),6.4),
-           ("FONTNAME",(0,0),(-1,0),"Courier-Bold"),("FONTSIZE",(0,0),(-1,0),6.4),
+    stile=[("FONTNAME",(0,0),(-1,-1),"Courier"),("FONTSIZE",(0,0),(-1,-1),7),
+           ("FONTNAME",(0,0),(-1,0),"Courier-Bold"),("FONTSIZE",(0,0),(-1,0),7),
            ("BACKGROUND",(0,0),(-1,0),C_NAVY),("TEXTCOLOR",(0,0),(-1,0),C_BUFF),
            ("LINEBELOW",(0,1),(-1,-1),0.3,C_RIGA),
            ("TOPPADDING",(0,0),(-1,-1),0.9),("BOTTOMPADDING",(0,0),(-1,-1),0.9),
@@ -434,7 +436,7 @@ def build_pdf():
     story.append(tw)
 
     story.append(H("Annotazioni sui waypoint evidenziati", "annotazioni", "H2"))
-    ann=[f'<font name="Courier" size="7.2" color="#B0207A">WP {w["n"]:02d}</font>&nbsp; {w["nota"]}'
+    ann=[f'<font name="Courier" size="7.5" color="#B0207A">WP {w["n"]:02d}</font>&nbsp; {w["nota"]}'
          for w in rotta["waypoints"] if w.get("nota")]
     meta=(len(ann)+1)//2
     sx, dx = ann[:meta], ann[meta:]
@@ -452,7 +454,7 @@ def build_pdf():
     story.append(Paragraph("Integrazioni web esclusivamente nautiche, verificate alla data indicata. "
                            "In caso di discrepanza prevale il dato del comandante.", S["H1sub"]))
     f_par=[Paragraph(f'· <link href="{f_["url"]}" color="#0E3A4C"><u>{f_["label"]}</u></link> '
-                     f'<font name="Courier" size="6.4" color="#5A6B78">{data_breve(f_["verificato"])}</font>',
+                     f'<font name="Courier" size="7" color="#5A6B78">{data_breve(f_["verificato"])}</font>',
                      S["fonte"]) for f_ in porto["fonti"]]
     meta=(len(f_par)+1)//2
     fsx, fdx = f_par[:meta], f_par[meta:]

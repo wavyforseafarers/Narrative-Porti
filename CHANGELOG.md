@@ -10,6 +10,9 @@ Formato versione: `vMAJOR.MINOR` — MINOR per aggiunte/modifiche ai dati, MAJOR
 - PDF: chip di provenienza compattati ([C] / [W 22.07.26] / [C+W] / [P]) con legenda estesa in copertina e in testa alla scheda.
 - PDF: layout ridistribuito da 8 a 5 pagine — sommario in testa alla scheda, cartine rotta e approccio affiancate, note narrative, annotazioni waypoint e fonti su due colonne. Nessun contenuto rimosso.
 - Cartina di approccio: etichette distanziate per evitare accavallamenti.
+- PDF: corretto il riempimento delle bande colorate (testata pagine e copertina). Erano disegnate solo come contorno, quindi il testo chiaro finiva su fondo bianco e risultava illeggibile.
+- PDF: scala tipografica razionalizzata da 12 corpi ravvicinati a 7 misure nette (15 / 11 / 10 / 9 / 8.5 / 7.5 / 7 pt); ingranditi tabella waypoint, chip di provenienza e piè di pagina.
+- QA automatica: verifica del contrasto sui pixel renderizzati, oltre al controllo di sovrapposizioni e margini.
 
 ## v1.0 — 2026-07-22
 
