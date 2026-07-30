@@ -621,11 +621,15 @@ def build_pdf():
     print("PDF   ->", pdf_path)
 
 def allarga_link_sommario(pdf_path):
-    """reportlab rende cliccabili solo il titolo e il numero di pagina: i puntini
-    di guida in mezzo restano inerti. Qui le aree si estendono a tutta la riga.
+    """Due interventi sul sommario generato da reportlab:
+    1) le aree cliccabili coprono solo titolo e numero di pagina, mentre i puntini
+       di guida in mezzo restano inerti: qui si estendono a tutta la riga;
+    2) i rimandi interni sono scritti come /Dest diretto, mentre i link esterni
+       usano un'azione /A: alcuni lettori implementano solo la forma con azione,
+       quindi i /Dest vengono convertiti in /A << /S /GoTo /D ... >>.
     Si usa clone_from per non perdere i segnalibri del documento."""
     from pypdf import PdfWriter
-    from pypdf.generic import NameObject, ArrayObject, FloatObject
+    from pypdf.generic import NameObject, ArrayObject, FloatObject, DictionaryObject
     from reportlab.lib.units import mm
     SX, DX = 18*mm, 192*mm
     w = PdfWriter(clone_from=str(pdf_path))
@@ -634,7 +638,9 @@ def allarga_link_sommario(pdf_path):
         ann = pg.get("/Annots")
         if not ann: continue
         link = [a.get_object() for a in ann
-                if a.get_object().get("/Subtype") == "/Link" and a.get_object().get("/Dest")]
+                if a.get_object().get("/Subtype") == "/Link"
+                and (a.get_object().get("/Dest")
+                     or a.get_object().get("/A", {}).get("/S") == "/GoTo")]
         # le due aree della stessa voce non hanno quota identica: raggruppo con tolleranza
         link.sort(key=lambda o: -float(o["/Rect"][1]))
         gruppi, corrente = [], []
@@ -649,11 +655,22 @@ def allarga_link_sommario(pdf_path):
         for gruppo in gruppi:
             # una voce di sommario ha due aree distinte che puntano alla stessa meta
             if len(gruppo) < 2: continue
-            if len({str(o["/Dest"][0]) for o in gruppo}) != 1: continue
+            mete = {str((o.get("/Dest") or o["/A"]["/D"])[0]) for o in gruppo}
+            if len(mete) != 1: continue
             for o in gruppo:
                 o[NameObject("/Rect")] = ArrayObject(
                     [FloatObject(SX), o["/Rect"][1], FloatObject(DX), o["/Rect"][3]])
                 estesi += 1
+        # forma con azione, compatibile con più lettori, e riscontro visivo al clic
+        for o in link:
+            if "/Dest" in o and "/A" not in o:
+                o[NameObject("/A")] = DictionaryObject({
+                    NameObject("/S"): NameObject("/GoTo"),
+                    NameObject("/D"): o["/Dest"],
+                })
+                # la specifica vieta /A e /Dest sulla stessa annotazione
+                del o[NameObject("/Dest")]
+            o[NameObject("/H")] = NameObject("/I")
     if estesi:
         with open(pdf_path, "wb") as f:
             w.write(f)

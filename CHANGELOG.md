@@ -12,6 +12,7 @@ Formato versione: `vMAJOR.MINOR` — MINOR per aggiunte/modifiche ai dati, MAJOR
 - Rimosse le ripetizioni fra note di rotta e note narrative del comandante: le trascrizioni verbatim restano nella scheda porto, le note di rotta conservano solo ciò che è specifico del transito.
 - Copertina: riquadro dei contenuti ricalcolato blocco per blocco con separatore, risolta la sovrapposizione fra l'ultima voce e la legenda della provenienza.
 - Sommario: voci in colore di collegamento con sottolineatura leggera, indicazione esplicita che sono cliccabili, e area cliccabile estesa a tutta la riga compresi i puntini di guida (reportlab rende cliccabili solo titolo e numero di pagina).
+- Rimandi interni del sommario riscritti come azione /A /GoTo invece di /Dest diretto, forma implementata da tutti i lettori; rimosso il /Dest duplicato, che la specifica PDF non ammette insieme all'azione. Aggiunto /H /I per il riscontro visivo al clic.
 - Nuovo blocco «Riferimenti comuni a tutti gli scali»: obblighi nelle aree VTS, riferimento maree Kartverket, regole sui fiordi UNESCO e scadenze OSPAR sugli scrubber, enunciati una sola volta invece di essere ripetuti in ogni scheda.
 - Vocabolario dei campi allineato fra le schede (Environmental limitations, Regolamento applicabile) per permettere il confronto diretto fra porti.
 - Impaginazione più densa: riempimento medio delle pagine di contenuto salito da circa il 78% al 90%, a pari numero di pagine e senza rimuovere contenuti.
