@@ -357,6 +357,25 @@ function renderPorto(p, rotta){
   sr.append(note);
   carta.append(sr);
 
+  /* riferimenti comuni */
+  if(DATA.comuni){
+    const sc = el('section','sezione');
+    sc.append(el('h2','titolo-sezione', esc(DATA.comuni.titolo)));
+    sc.append(el('div','', `<span style="font-size:12px;color:var(--secondario)">${esc(DATA.comuni.sottotitolo)}</span>`));
+    DATA.comuni.voci.forEach(v=>{
+      const r = el('div','voce');
+      r.append(el('div','etichetta', esc(v.t)),
+               el('div','valore', esc(v.v) + chipProv(v.fonte, v.verificato)));
+      sc.append(r);
+    });
+    DATA.comuni.fonti.forEach(f=>{
+      const r = el('div','fonte');
+      r.innerHTML = `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.label)}</a><span class="data-verifica">verif. ${esc(f.verificato)}</span>`;
+      sc.append(r);
+    });
+    carta.append(sc);
+  }
+
   /* fonti */
   const sf = el('section','sezione');
   sf.append(el('h2','titolo-sezione','Fonti — verifica del 22.07.2026'));

@@ -1,0 +1,15 @@
+{
+  "titolo": "Riferimenti comuni a tutti gli scali",
+  "sottotitolo": "Regole e fonti valide per l'intera area operativa, richiamate qui una sola volta e non ripetute nelle singole schede porto.",
+  "voci": [
+    { "t": "Aree VTS norvegesi", "v": "Ascolto continuo obbligatorio sul canale del centro competente e permesso per l'uso delle acque, in entrata e in uscita dall'area. Il canale e il settore sono indicati nella scheda di ciascun porto.", "fonte": "W", "verificato": "2026-07-22" },
+    { "t": "Maree e livello del mare", "v": "Riferimento ufficiale per tutta la costa norvegese: Kartverket «Se havnivå» (tavole e previsioni per qualsiasi punto).", "fonte": "W", "verificato": "2026-07-22" },
+    { "t": "Fiordi patrimonio UNESCO", "v": "Le regole a zero emissioni in vigore dal 01.01.2026 riguardano i soli Heritage Fjords e non si applicano né a Haugesund né a Stavanger.", "fonte": "W", "verificato": "2026-07-29" },
+    { "t": "Scrubber — scadenze OSPAR", "v": "Accordo regionale annunciato il 26.06.2025: divieto di scarico da scrubber a circuito aperto nelle acque interne e nei porti dal 01.07.2027, e da circuito chiuso dal 01.01.2029. Da tenere presente nella pianificazione dei prossimi anni.", "fonte": "W", "verificato": "2026-07-29" }
+  ],
+  "fonti": [
+    { "label": "Kystverket — Obblighi delle navi nelle aree VTS", "url": "https://www.kystverket.no/en/navigation-and-monitoring/vts---vessel-traffic-service/requirements-for-vessels-operating-in-vts-areas/", "verificato": "2026-07-22" },
+    { "label": "Kartverket — Se havnivå (maree e livello del mare)", "url": "https://www.kartverket.no/en/at-sea/se-havniva/tides-and-water-level", "verificato": "2026-07-22" },
+    { "label": "NorthStandard — Restrizioni allo scarico da EGCS, incluse le scadenze OSPAR", "url": "https://north-standard.com/insights-and-resources/resources/news/no-scrubs-countries-and-ports-where-restrictions-on-egcs-discharges-apply", "verificato": "2026-07-29" }
+  ]
+}

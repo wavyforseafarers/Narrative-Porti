@@ -18,6 +18,8 @@ def carica(cartella):
 
 PORTI = carica("porti")
 ROTTE = carica("rotte")
+_c = BASE/"data"/"comuni.json"
+COMUNI = json.loads(_c.read_text(encoding="utf-8")) if _c.exists() else None
 
 def ddm_to_dec(txt):
     m = re.match(r"(\d+)°\s*([\d.]+)'?\s*([NSEW])", txt.strip())
@@ -67,7 +69,7 @@ def data_breve(iso):
 def build_html():
     tpl = (BASE/"scripts"/"template_index.html").read_text(encoding="utf-8")
     dati = {"meta": {"versione": VERSIONE, "generato": OGGI, "repo": REPO},
-            "porti": PORTI, "rotte": ROTTE}
+            "porti": PORTI, "rotte": ROTTE, "comuni": COMUNI}
     html = tpl.replace("__DATA__", json.dumps(dati, ensure_ascii=False))
     (OUT/"index.html").write_text(html, encoding="utf-8")
     print("HTML  ->", OUT/"index.html")
@@ -318,34 +320,39 @@ def build_pdf():
                             f'{d}  ·  {len(rotta_["waypoints"])} WAYPOINT  ·  ARRIVO {porto_["nome"].upper()}')
             y -= 17*mm
 
-        # riquadro contenuti — altezza calcolata sul testo effettivo
+        # riquadro contenuti — ogni blocco misurato e impilato con interlinea esplicita
         n_ = len(COPPIE)
-        righe=[f'Schede porto: {ELENCO_PORTI_LUNGO}']
-        righe += ["Sequenza di manovra per l'arrivo, con gli eventi operativi in evidenza",
-                  f'Piano waypoint integrale di {n_} ' + ("rotta" if n_==1 else "rotte") + ', trascrizione di bordo',
-                  "Cartine schematiche della rotta e dell'approccio finale per ogni scalo",
-                  "Fonti ufficiali con data di verifica e provenienza di ogni dato"]
+        righe=[f'Schede porto: {ELENCO_PORTI_LUNGO}',
+               "Sequenza di manovra per l'arrivo, con gli eventi operativi in evidenza",
+               f'Piano waypoint integrale di {n_} ' + ("rotta" if n_==1 else "rotte") + ', trascrizione di bordo',
+               "Cartine schematiche della rotta e dell'approccio finale per ogni scalo",
+               "Fonti ufficiali con data di verifica e provenienza di ogni dato"]
         x_box, w_box = 20*mm, 170*mm
-        x_testo = 31.5*mm; w_testo = w_box - (x_testo - x_box) - 8*mm
+        x_testo = 31.5*mm
+        w_testo = w_box - (x_testo - x_box) - 8*mm
         blocchi = [spezza(canv, r_, "Helvetica", 9, w_testo) for r_ in righe]
-        n_righe = sum(len(b) for b in blocchi)
-        h_box = 13*mm + n_righe*4.6*mm + (len(righe)-1)*2.4*mm + 15*mm
+        H_RIGA, H_GAP = 4.6*mm, 2.4*mm
+        H_TIT, H_SEP, H_CAP, H_LEG, H_PAD = 8*mm, 6.5*mm, 4.6*mm, 4.2*mm, 6*mm
+        h_elenco = sum(len(b)*H_RIGA for b in blocchi) + (len(blocchi)-1)*H_GAP
+        h_box = H_TIT + h_elenco + H_SEP + H_CAP + H_LEG + H_PAD
         y_top = H-132*mm
         canv.setStrokeColor(C_NAVY); canv.setLineWidth(0.8)
         canv.rect(x_box, y_top-h_box, w_box, h_box, stroke=1, fill=0)
-        testo_sp(canv, 26*mm, y_top-8*mm, "CONTENUTO DI QUESTA VERSIONE", "Helvetica-Bold", 8.5, 2, C_NAVY)
-        y = y_top-16*mm
+        testo_sp(canv, 26*mm, y_top-6*mm, "CONTENUTO DI QUESTA VERSIONE", "Helvetica-Bold", 8.5, 2, C_NAVY)
+        y = y_top - H_TIT - 3.2*mm
         for blocco in blocchi:
             canv.setFillColor(C_MAG); canv.circle(27.5*mm, y+1.2*mm, 1.05*mm, stroke=0, fill=1)
             canv.setFillColor(C_INK); canv.setFont("Helvetica", 9)
             for i, riga in enumerate(blocco):
-                canv.drawString(x_testo, y - i*4.6*mm, riga)
-            y -= len(blocco)*4.6*mm + 2.4*mm
-        # legenda provenienza — posizioni misurate
-        y_leg = y_top - h_box + 9.5*mm
+                canv.drawString(x_testo, y - i*H_RIGA, riga)
+            y -= len(blocco)*H_RIGA + H_GAP
+        # separatore e legenda della provenienza
+        y += H_GAP - H_SEP + 1.5*mm
+        canv.setStrokeColor(C_RIGA); canv.setLineWidth(0.6)
+        canv.line(26*mm, y+3.2*mm, x_box+w_box-6*mm, y+3.2*mm)
         canv.setFont("Helvetica", 7.8); canv.setFillColor(C_SEC)
-        canv.drawString(26*mm, y_leg+5.5*mm, "Provenienza dei dati riportata accanto a ogni voce:")
-        riga_chip(canv, 26*mm, y_leg, [
+        canv.drawString(26*mm, y-1*mm, "Provenienza dei dati, riportata accanto a ogni voce:")
+        riga_chip(canv, 26*mm, y-1*mm-H_LEG, [
             ("[C]",   "comandante (fonte di verità)", C_NAVY),
             ("[W]",   "web verificato + data",        C_MAG),
             ("[C+W]", "confermato da entrambi",       colors.HexColor("#7A2E58")),
@@ -385,9 +392,11 @@ def build_pdf():
       "fonte": ParagraphStyle("fonte", fontName="Helvetica", fontSize=8.5, leading=10.6, textColor=C_INK),
       "legenda": ParagraphStyle("legenda", fontName="Helvetica", fontSize=7.5, leading=9.8, textColor=C_SEC),
       "toc0": ParagraphStyle("toc0", fontName="Helvetica-Bold", fontSize=9, leading=11.6,
-                             textColor=C_NAVY, spaceBefore=1.5, spaceAfter=0),
+                             textColor=C_NAVY, spaceBefore=1.5, spaceAfter=0,
+                             linkUnderline=1, underlineColor=colors.HexColor("#C9BFA6")),
       "toc1": ParagraphStyle("toc1", fontName="Helvetica", fontSize=8.5, leading=10.6,
-                             leftIndent=11, textColor=C_INK, spaceBefore=0, spaceAfter=0),
+                             leftIndent=11, textColor=C_NAVY, spaceBefore=0, spaceAfter=0,
+                             linkUnderline=1, underlineColor=colors.HexColor("#C9BFA6")),
     }
     COL_PROV = {"C":"#0E3A4C","W":"#B0207A","CW":"#7A2E58","P":"#5A6B78"}
     def prov(f_, ver=None):
@@ -417,9 +426,23 @@ def build_pdf():
 
     # ---- sommario compatto (in testa alla prima pagina di contenuto)
     story.append(Paragraph("Sommario", S["H2"]))
+    story.append(Paragraph("Ogni voce è cliccabile e rimanda alla pagina indicata; "
+                           "gli stessi rimandi sono disponibili come segnalibri del PDF.", S["legenda"]))
+    story.append(Spacer(1, 3))
     toc=TableOfContents(); toc.levelStyles=[S["toc0"], S["toc1"]]
     story.append(toc)
     story.append(Spacer(1, 9))
+
+    if COMUNI:
+        story.append(H(COMUNI["titolo"], "comuni"))
+        story.append(Paragraph(COMUNI["sottotitolo"], S["legenda"]))
+        story.append(Spacer(1, 2))
+        story.append(tabella_voci(COMUNI["voci"], 34*mm, 140*mm))
+        story.append(Spacer(1, 3))
+        story.append(Paragraph(" · ".join(
+            f'<link href="{f_["url"]}" color="#0E3A4C"><u>{f_["label"]}</u></link>'
+            for f_ in COMUNI["fonti"]), S["fonte"]))
+        story.append(Spacer(1, 8))
 
     def blocco_scalo(porto, rotta, primo):
         """Scheda porto + rotta + waypoint per un singolo scalo."""
@@ -429,15 +452,13 @@ def build_pdf():
             b.append(PageBreak())
         b.append(H(f'Scheda porto — {porto["nome"]}', "porto"+sfx))
         b.append(Paragraph(f'{porto["banchina_principale"]} — {porto["paese"]}, {porto["regione"]}', S["H1sub"]))
+        codici = " · ".join(f'{c["t"]} <b>{c["v"]}</b>' + prov(c["fonte"], c.get("verificato"))
+                            for c in porto.get("identificazione", []))
         b.append(Paragraph(
             f'<font name="Courier">{porto["posizione"]["testo"]}</font>'
-            f'&nbsp;&nbsp;·&nbsp;&nbsp;Scheda v{porto["versione_scheda"]} — aggiornata {porto["aggiornato"]}', S["corpo"]))
-        if primo:
-            b.append(Paragraph(
-                'Provenienza: <font color="#0E3A4C"><b>[C]</b></font> comandante (fonte di verità) · '
-                '<font color="#B0207A"><b>[W]</b></font> web verificato + data · '
-                '<font color="#7A2E58"><b>[C+W]</b></font> confermato da entrambi · '
-                '<font color="#5A6B78"><b>[P]</b></font> in attesa di conferma', S["legenda"]))
+            f'&nbsp;&nbsp;·&nbsp;&nbsp;Scheda v{porto["versione_scheda"]} del {porto["aggiornato"]}', S["corpo"]))
+        if codici:
+            b.append(Paragraph(codici, S["legenda"]))
         b.append(Spacer(1, 3))
 
         # sequenza di manovra
@@ -511,8 +532,9 @@ def build_pdf():
         # piano waypoint
         b.append(PageBreak())
         b.append(H("Piano waypoint — trascrizione di bordo", "waypoint"+sfx))
-        b.append(Paragraph("Coordinate e dati riportati esattamente come nel piano di bordo. "
-                           "In rosa i waypoint con annotazione operativa.", S["H1sub"]))
+        b.append(Paragraph(
+            (f'{rotta["titolo"]} — coordinate e dati riportati esattamente come nel piano di bordo; '
+             "in rosa i waypoint con annotazione operativa." ) if primo else rotta["titolo"], S["H1sub"]))
         ETI={"n":"N.","nome":"NOME","raggio_nm":"R [NM]","lat_txt":"LAT","lon_txt":"LON",
              "bww":"BWW\u00B0","dist_enr":"D.ENR","dist":"DIST","sail":"SAIL","ap":"AP"}
         LARG={"n":8,"nome":56,"raggio_nm":13,"lat_txt":25,"lon_txt":26,
@@ -595,7 +617,47 @@ def build_pdf():
 
 
     doc.multiBuild(story)
+    allarga_link_sommario(pdf_path)
     print("PDF   ->", pdf_path)
+
+def allarga_link_sommario(pdf_path):
+    """reportlab rende cliccabili solo il titolo e il numero di pagina: i puntini
+    di guida in mezzo restano inerti. Qui le aree si estendono a tutta la riga.
+    Si usa clone_from per non perdere i segnalibri del documento."""
+    from pypdf import PdfWriter
+    from pypdf.generic import NameObject, ArrayObject, FloatObject
+    from reportlab.lib.units import mm
+    SX, DX = 18*mm, 192*mm
+    w = PdfWriter(clone_from=str(pdf_path))
+    estesi = 0
+    for pg in w.pages:
+        ann = pg.get("/Annots")
+        if not ann: continue
+        link = [a.get_object() for a in ann
+                if a.get_object().get("/Subtype") == "/Link" and a.get_object().get("/Dest")]
+        # le due aree della stessa voce non hanno quota identica: raggruppo con tolleranza
+        link.sort(key=lambda o: -float(o["/Rect"][1]))
+        gruppi, corrente = [], []
+        for o in link:
+            y = float(o["/Rect"][1])
+            if corrente and abs(float(corrente[-1]["/Rect"][1]) - y) <= 6:
+                corrente.append(o)
+            else:
+                if corrente: gruppi.append(corrente)
+                corrente = [o]
+        if corrente: gruppi.append(corrente)
+        for gruppo in gruppi:
+            # una voce di sommario ha due aree distinte che puntano alla stessa meta
+            if len(gruppo) < 2: continue
+            if len({str(o["/Dest"][0]) for o in gruppo}) != 1: continue
+            for o in gruppo:
+                o[NameObject("/Rect")] = ArrayObject(
+                    [FloatObject(SX), o["/Rect"][1], FloatObject(DX), o["/Rect"][3]])
+                estesi += 1
+    if estesi:
+        with open(pdf_path, "wb") as f:
+            w.write(f)
+    return estesi
 
 if __name__ == "__main__":
     build_html()

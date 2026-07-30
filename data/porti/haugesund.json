@@ -7,54 +7,236 @@
   "posizione": {
     "testo": "59°24.691' N | 005°15.309' E",
     "lat": 59.411517,
-    "lon": 5.255150
+    "lon": 5.25515
   },
   "sezioni": [
     {
       "titolo": "Generalità e contatti",
       "voci": [
-        { "t": "Autorità portuale", "v": "Karmsund Havn IKS", "fonte": "W", "verificato": "2026-07-22" },
-        { "t": "Port control / Havnevakt", "v": "VHF ch 12 e 16 (ascolto continuo) · tel +47 52 70 37 50 (24/7) · havnevakt@karmsund-havn.no", "fonte": "CW", "nota": "Canale di lavoro del porto CH 12 indicato dal comandante e confermato dal sito ufficiale", "verificato": "2026-07-22" },
-        { "t": "Banchina", "v": "Garpeskjærskaien, lato ovest dell'isola di Risøy, all'ingresso nord di Haugesund · designazione portuale 3-0522 (G-kai2)", "fonte": "W", "verificato": "2026-07-22" },
-        { "t": "VTS", "v": "Kvitsøy VTS — area Nord, VHF ch 19 · tel +47 51 73 60 33 · ingresso in area ≈ WP18 (4 NM IN). Obbligo di ascolto continuo sul canale VTS e clearance prima di utilizzare l'area.", "fonte": "CW", "verificato": "2026-07-22" },
-        { "t": "Pilotaggio", "v": "Kvitsøy Pilot Dispatch Centre — VHF ch 13/16 · tel +47 51 73 53 97", "fonte": "W", "verificato": "2026-07-22" },
-        { "t": "Richiesta accosto", "v": "Tramite SafeSeaNet (shiprep.no) per navi ≥ 300 GT; informazioni supplementari pre-arrivo alla Havnevakt", "fonte": "W", "verificato": "2026-07-22" }
+        {
+          "t": "Autorità portuale",
+          "v": "Karmsund Havn IKS — Garpeskjærvegen 2, N-5527 Haugesund",
+          "fonte": "W",
+          "verificato": "2026-07-29"
+        },
+        {
+          "t": "Port control",
+          "v": "Port inspector / Havnevakt — VHF ch 12 · tel +47 906 23 796 · havnevakt@karmsund-havn.no",
+          "fonte": "CW",
+          "nota": "Canale 12 indicato dal comandante e confermato dal sito ufficiale. Recapito aggiornato dall'autorità l'08.06.2026: il numero 52 70 37 50 è quello della sede amministrativa (lun–ven 08:00–15:30).",
+          "verificato": "2026-07-29"
+        },
+        {
+          "t": "Orari VHF",
+          "v": "Port inspector disponibile 24/7",
+          "fonte": "W",
+          "verificato": "2026-07-29"
+        },
+        {
+          "t": "VTS",
+          "v": "Kvitsøy VTS — area Nord, VHF ch 19 · tel +47 51 73 60 33 · ingresso in area ≈ WP18 (4 NM IN).",
+          "fonte": "CW",
+          "verificato": "2026-07-22"
+        },
+        {
+          "t": "Pilotaggio",
+          "v": "Kvitsøy Pilot Dispatch Centre — VHF ch 13/16 · tel +47 51 73 53 97. Pilotaggio obbligatorio.",
+          "fonte": "W",
+          "verificato": "2026-07-29"
+        },
+        {
+          "t": "Rapporto d'arrivo",
+          "v": "Richiesta accosto tramite SafeSeaNet (shiprep.no) per navi ≥ 300 GT; informazioni supplementari pre-arrivo alla Havnevakt",
+          "fonte": "W",
+          "verificato": "2026-07-22"
+        },
+        {
+          "t": "Preavviso pilota",
+          "v": "Non pubblicato dall'autorità portuale",
+          "fonte": "P"
+        },
+        {
+          "t": "Emergenza inquinamento",
+          "v": "110 — Alarmsentral brann Sør-Vest",
+          "fonte": "W",
+          "verificato": "2026-07-29"
+        }
       ]
     },
     {
       "titolo": "Dati nautici e banchina",
       "voci": [
-        { "t": "Lunghezza banchina", "v": "297 m — riceve le navi da crociera di maggiori dimensioni; di norma una sola nave alla volta", "fonte": "W", "verificato": "2026-07-22" },
-        { "t": "Fondale in banchina", "v": "Dato ufficiale non pubblicato online in formato testuale. Riferimento: carta ufficiale della banchina, Karmsund Havn (nov 2024) — link in Fonti.", "fonte": "P" },
-        { "t": "ISPS", "v": "Terminal conforme ISPS, approvato dalla Norwegian Coastal Administration", "fonte": "W", "verificato": "2026-07-22" },
-        { "t": "Shore power", "v": "Disponibile: sistema mobile ad alta tensione fino a 16 MVA (Havnekraft / Zinus «Shore Power Cruiser»)", "fonte": "W", "verificato": "2026-07-22" },
-        { "t": "Ormeggio", "v": "Prua e poppa, configurazione cavi 7/2", "fonte": "C" },
-        { "t": "Strumenti live del porto", "v": "Anemometro in banchina e misuratore di corrente di marea nel Karmsundet, pubblicati da Karmsund Havn — link in Fonti", "fonte": "W", "verificato": "2026-07-22" },
-        { "t": "Maree", "v": "Riferimento ufficiale: Kartverket «Se havnivå» (tavole e previsioni per qualsiasi punto della costa norvegese)", "fonte": "W", "verificato": "2026-07-22" }
+        {
+          "t": "Banchina",
+          "v": "Garpeskjærskaien, lato ovest dell'isola di Risøy, all'ingresso nord di Haugesund",
+          "fonte": "W",
+          "verificato": "2026-07-22"
+        },
+        {
+          "t": "Lunghezza banchina",
+          "v": "297 m — riceve le navi da crociera di maggiori dimensioni; di norma una sola nave alla volta",
+          "fonte": "W",
+          "verificato": "2026-07-22"
+        },
+        {
+          "t": "Fondali dichiarati",
+          "v": "Non pubblicati online in formato testuale. Riferimento: carta ufficiale della banchina, Karmsund Havn (nov 2024) — link in Fonti.",
+          "fonte": "P"
+        },
+        {
+          "t": "Ormeggio",
+          "v": "Prua e poppa, configurazione cavi 7/2",
+          "fonte": "C"
+        },
+        {
+          "t": "Strumenti live del porto",
+          "v": "Anemometro in banchina e misuratore di corrente di marea nel Karmsundet — link in Fonti",
+          "fonte": "W",
+          "verificato": "2026-07-22"
+        },
+        {
+          "t": "Evoluzione",
+          "v": "Nessuna manovra di evoluzione registrata all'arrivo: ampia accostata al traverso di Møllerodden e accosto diretto",
+          "fonte": "C"
+        },
+        {
+          "t": "Da acquisire",
+          "v": "Orientamento banchina · UKC richiesta dal porto · bitte, parabordi e passerelle · area di ancoraggio",
+          "fonte": "P"
+        }
       ]
     },
     {
       "titolo": "Combustibile e ambiente",
       "voci": [
-        { "t": "Environmental limitations", "v": "Nessuna sulla rotta e per l'ingresso", "fonte": "C" },
-        { "t": "Ingresso", "v": "Consentito sia con AAQS sia con MGO", "fonte": "C" },
-        { "t": "Manovra", "v": "AAQS consentito durante la manovra", "fonte": "C" },
-        { "t": "In banchina", "v": "Passaggio immediato a MGO con SCR, oppure shore power connection", "fonte": "C" }
+        {
+          "t": "Environmental limitations",
+          "v": "Nessuna sulla rotta e per l'ingresso",
+          "fonte": "C"
+        },
+        {
+          "t": "Ingresso",
+          "v": "Consentito sia con AAQS sia con MGO",
+          "fonte": "C"
+        },
+        {
+          "t": "Manovra",
+          "v": "AAQS consentito durante la manovra",
+          "fonte": "C"
+        },
+        {
+          "t": "In banchina",
+          "v": "Passaggio immediato a MGO con SCR, oppure shore power connection",
+          "fonte": "C"
+        },
+        {
+          "t": "Shore power",
+          "v": "Disponibile: sistema mobile ad alta tensione fino a 16 MVA (Havnekraft / Zinus «Shore Power Cruiser»)",
+          "fonte": "W",
+          "verificato": "2026-07-22"
+        },
+        {
+          "t": "Da acquisire",
+          "v": "Regola pubblicata sugli scrubber · rendicontazione ambientale in partenza",
+          "fonte": "P"
+        }
+      ]
+    },
+    {
+      "titolo": "Restrizioni operative in porto",
+      "voci": [
+        {
+          "t": "Regolamento applicabile",
+          "v": "Forskrift om bruk av og orden i havner og farvann — Karmsund Havn IKS, 15.03.2017, confermata dal Kystverket il 06.03.2018",
+          "fonte": "W",
+          "verificato": "2026-07-29"
+        },
+        {
+          "t": "Velocità",
+          "v": "Riduzione 11 → 7 kn all'altezza di Grunnane (WP20); limite 8 kn nella canaletta dal traverso della boa rossa Kråkeflua",
+          "fonte": "C"
+        },
+        {
+          "t": "ISPS",
+          "v": "Terminal conforme ISPS, approvato dalla Norwegian Coastal Administration",
+          "fonte": "W",
+          "verificato": "2026-07-22"
+        },
+        {
+          "t": "Da acquisire",
+          "v": "Restrizioni su emissioni acustiche · manutenzione ed esercitazioni in banchina · preavvisi per provviste e rifiuti · disponibilità rimorchiatori",
+          "fonte": "P"
+        }
+      ]
+    },
+    {
+      "titolo": "Servizi",
+      "voci": [
+        {
+          "t": "Da acquisire",
+          "v": "Acqua dolce e rata di erogazione · punti di sbarco tender · bunkeraggio",
+          "fonte": "P"
+        }
       ]
     }
   ],
   "avvicinamento": {
     "vento": "In approccio vento da NNW 25–30 kn (esperienza diretta)",
     "sequenza": [
-      { "wp": 18, "nome": "4 NM IN", "azione": "Ingresso nell'area di competenza Kvitsøy VTS — VHF ch 19", "tipo": "vts" },
-      { "wp": 19, "nome": "Haugesund Port Limit", "azione": "Limite delle acque portuali", "tipo": "limite" },
-      { "wp": 20, "nome": "Grunnane", "azione": "Riduzione di velocità da 11 a 7 kn", "tipo": "velocita" },
-      { "wp": 21, "nome": "SBE / Red Manning", "azione": "Stand By Engines — red manning", "tipo": "manning" },
-      { "wp": 22, "nome": "Boa rossa Kråkeflua", "azione": "Al traverso della boa si entra nella canaletta stretta — speed limit 8 kn", "tipo": "velocita" },
-      { "wp": 23, "nome": "Galven", "azione": "Punto di rotta nella canaletta", "tipo": "punto" },
-      { "wp": 24, "nome": "Galten", "azione": "Ultimo punto prima dell'accostata finale", "tipo": "punto" },
-      { "wp": null, "nome": "Traverso Møllerodden", "azione": "Ampia accostata a sinistra — ROT oltre 30°/min", "tipo": "manovra" },
-      { "wp": 25, "nome": "Garpeskjærskaien", "azione": "Ormeggio prua e poppa, configurazione 7/2", "tipo": "ormeggio" }
+      {
+        "wp": 18,
+        "nome": "4 NM IN",
+        "azione": "Ingresso nell'area di competenza Kvitsøy VTS — VHF ch 19",
+        "tipo": "vts"
+      },
+      {
+        "wp": 19,
+        "nome": "Haugesund Port Limit",
+        "azione": "Limite delle acque portuali",
+        "tipo": "limite"
+      },
+      {
+        "wp": 20,
+        "nome": "Grunnane",
+        "azione": "Riduzione di velocità da 11 a 7 kn",
+        "tipo": "velocita"
+      },
+      {
+        "wp": 21,
+        "nome": "SBE / Red Manning",
+        "azione": "Stand By Engines — red manning",
+        "tipo": "manning"
+      },
+      {
+        "wp": 22,
+        "nome": "Boa rossa Kråkeflua",
+        "azione": "Al traverso della boa si entra nella canaletta stretta — speed limit 8 kn",
+        "tipo": "velocita"
+      },
+      {
+        "wp": 23,
+        "nome": "Galven",
+        "azione": "Punto di rotta nella canaletta",
+        "tipo": "punto"
+      },
+      {
+        "wp": 24,
+        "nome": "Galten",
+        "azione": "Ultimo punto prima dell'accostata finale",
+        "tipo": "punto"
+      },
+      {
+        "wp": null,
+        "nome": "Traverso Møllerodden",
+        "azione": "Ampia accostata a sinistra — ROT oltre 30°/min",
+        "tipo": "manovra"
+      },
+      {
+        "wp": 25,
+        "nome": "Garpeskjærskaien",
+        "azione": "Ormeggio prua e poppa, configurazione 7/2",
+        "tipo": "ormeggio"
+      }
     ]
   },
   "note_narrative": [
@@ -67,17 +249,71 @@
     "Canali del porto VHF CH 12. AAQS consentito durante la manovra; subito dopo passaggio ad MGO con SCR o in alternativa shore power connection. Ormeggio banchina Haugesund Cruise Port 7/2 prua e poppa."
   ],
   "fonti": [
-    { "label": "Karmsund Havn — Haugesund Cruise Port (banchina 297 m, ISPS)", "url": "https://karmsundhavn.no/en/business-areas/garpaskjaer/", "verificato": "2026-07-22" },
-    { "label": "Karmsund Havn — Contatti / Havnevakt (VHF 12 e 16, tel 24/7)", "url": "https://karmsundhavn.no/en/contact/", "verificato": "2026-07-22" },
-    { "label": "Karmsund Havn — Anløp (SafeSeaNet, designazioni banchine)", "url": "https://karmsundhavn.no/maritimt/anlop/", "verificato": "2026-07-22" },
-    { "label": "Karmsund Havn — Carta ufficiale banchina Garpeskjærskaien (nov 2024)", "url": "https://karmsundhavn.no/wp-content/uploads/2024/11/Garpaskjaerskaien-Chart-details-new-scaled.jpg", "verificato": "2026-07-22" },
-    { "label": "Karmsund Havn — Anemometro in banchina", "url": "https://karmsundhavn.no/maritimt/vindmaler/", "verificato": "2026-07-22" },
-    { "label": "Karmsund Havn — Corrente di marea Karmsundet", "url": "https://karmsundhavn.no/maritimt/tidevannsstrom/", "verificato": "2026-07-22" },
-    { "label": "Kystverket — Centri VTS (Kvitsøy VTS ch 19 Nord / 18 Sud; Fedje VTS ch 80 Nord / 71 Sud)", "url": "https://www.kystverket.no/en/contact/vts-service/", "verificato": "2026-07-22" },
-    { "label": "Kystverket — Obblighi delle navi nelle aree VTS", "url": "https://www.kystverket.no/en/navigation-and-monitoring/vts---vessel-traffic-service/requirements-for-vessels-operating-in-vts-areas/", "verificato": "2026-07-22" },
-    { "label": "Kartverket — Se havnivå (maree e livello del mare)", "url": "https://www.kartverket.no/en/at-sea/se-havniva/tides-and-water-level", "verificato": "2026-07-22" },
-    { "label": "Havnekraft/Zinus — Shore power Garpeskjærskaien (16 MVA)", "url": "https://www.cruisemapper.com/ports/haugesund-port-239", "verificato": "2026-07-22" }
+    {
+      "label": "Karmsund Havn — Haugesund Cruise Port (banchina 297 m, ISPS)",
+      "url": "https://karmsundhavn.no/en/business-areas/garpaskjaer/",
+      "verificato": "2026-07-22"
+    },
+    {
+      "label": "Karmsund Havn — Contatti / Havnevakt (VHF 12 e 16, tel 24/7)",
+      "url": "https://karmsundhavn.no/en/contact/",
+      "verificato": "2026-07-22"
+    },
+    {
+      "label": "Karmsund Havn — Anløp (SafeSeaNet, designazioni banchine)",
+      "url": "https://karmsundhavn.no/maritimt/anlop/",
+      "verificato": "2026-07-22"
+    },
+    {
+      "label": "Karmsund Havn — Carta ufficiale banchina Garpeskjærskaien (nov 2024)",
+      "url": "https://karmsundhavn.no/wp-content/uploads/2024/11/Garpaskjaerskaien-Chart-details-new-scaled.jpg",
+      "verificato": "2026-07-22"
+    },
+    {
+      "label": "Karmsund Havn — Anemometro in banchina",
+      "url": "https://karmsundhavn.no/maritimt/vindmaler/",
+      "verificato": "2026-07-22"
+    },
+    {
+      "label": "Karmsund Havn — Corrente di marea Karmsundet",
+      "url": "https://karmsundhavn.no/maritimt/tidevannsstrom/",
+      "verificato": "2026-07-22"
+    },
+    {
+      "label": "Kystverket — Centri VTS (Kvitsøy VTS ch 19 Nord / 18 Sud; Fedje VTS ch 80 Nord / 71 Sud)",
+      "url": "https://www.kystverket.no/en/contact/vts-service/",
+      "verificato": "2026-07-22"
+    },
+    {
+      "label": "Havnekraft/Zinus — Shore power Garpeskjærskaien (16 MVA)",
+      "url": "https://www.cruisemapper.com/ports/haugesund-port-239",
+      "verificato": "2026-07-22"
+    },
+    {
+      "label": "Lovdata — Forskrift om orden i og bruk av farvann og havner, Karmsund",
+      "url": "https://lovdata.no/dokument/LTII/forskrift/2009-12-16-1617",
+      "verificato": "2026-07-29"
+    }
   ],
-  "versione_scheda": "1.0",
-  "aggiornato": "2026-07-22"
+  "versione_scheda": "1.1",
+  "aggiornato": "2026-07-22",
+  "identificazione": [
+    {
+      "t": "UN/LOCODE",
+      "v": "NOHAU",
+      "fonte": "W",
+      "verificato": "2026-07-29"
+    },
+    {
+      "t": "Designazione banchina",
+      "v": "3-0522 (G-kai2)",
+      "fonte": "W",
+      "verificato": "2026-07-22"
+    },
+    {
+      "t": "Port facility",
+      "v": "da acquisire",
+      "fonte": "P"
+    }
+  ]
 }

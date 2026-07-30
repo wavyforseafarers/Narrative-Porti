@@ -3,6 +3,19 @@
 Tutte le modifiche rilevanti a questo progetto sono documentate qui.
 Formato versione: `vMAJOR.MINOR` — MINOR per aggiunte/modifiche ai dati, MAJOR per cambi di struttura.
 
+## v1.3 — 2026-07-29
+
+- Schede porto uniformate: entrambi gli scali hanno ora le stesse cinque sezioni (Generalità e contatti, Dati nautici e banchina, Combustibile e ambiente, Restrizioni operative in porto, Servizi). Dove un dato non è pubblicato compare una voce «Da acquisire» che lo elenca, invece di lasciare la sezione assente.
+- Codici identificativi (UN/LOCODE, designazione banchina, port facility) spostati nell'intestazione della scheda, accanto al nome del porto.
+- Haugesund: aggiunto UN/LOCODE NOHAU e il riferimento al regolamento portuale (Forskrift om orden i og bruk av farvann og havner).
+- Correzione contatti Haugesund: port inspector VHF ch 12, tel +47 906 23 796, disponibile 24/7. Il numero 52 70 37 50 riportato nelle versioni precedenti è quello della sede amministrativa. Fonte aggiornata dall'autorità l'08.06.2026.
+- Rimosse le ripetizioni fra note di rotta e note narrative del comandante: le trascrizioni verbatim restano nella scheda porto, le note di rotta conservano solo ciò che è specifico del transito.
+- Copertina: riquadro dei contenuti ricalcolato blocco per blocco con separatore, risolta la sovrapposizione fra l'ultima voce e la legenda della provenienza.
+- Sommario: voci in colore di collegamento con sottolineatura leggera, indicazione esplicita che sono cliccabili, e area cliccabile estesa a tutta la riga compresi i puntini di guida (reportlab rende cliccabili solo titolo e numero di pagina).
+- Nuovo blocco «Riferimenti comuni a tutti gli scali»: obblighi nelle aree VTS, riferimento maree Kartverket, regole sui fiordi UNESCO e scadenze OSPAR sugli scrubber, enunciati una sola volta invece di essere ripetuti in ogni scheda.
+- Vocabolario dei campi allineato fra le schede (Environmental limitations, Regolamento applicabile) per permettere il confronto diretto fra porti.
+- Impaginazione più densa: riempimento medio delle pagine di contenuto salito da circa il 78% al 90%, a pari numero di pagine e senza rimuovere contenuti.
+
 ## v1.2 — 2026-07-29
 
 - Secondo scalo: Stavanger (Norvegia) — Strandkaien 16W, Cruise & Waiting Terminal.

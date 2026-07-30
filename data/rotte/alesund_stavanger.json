@@ -7,45 +7,271 @@
   "distanza_nm": null,
   "distanza_calcolata": true,
   "tipo_tratte": null,
-  "colonne": ["n", "nome", "lat_txt", "lon_txt", "raggio_nm", "ap"],
+  "colonne": [
+    "n",
+    "nome",
+    "lat_txt",
+    "lon_txt",
+    "raggio_nm",
+    "ap"
+  ],
   "waypoints": [
-    { "n": 1,  "nome": "Storneskaien Pier",                            "lat_txt": "62°28.149' N", "lon_txt": "006°08.791' E", "raggio_nm": 0.00, "ap": null, "nota": "Ormeggio di partenza — Storneskaia, Ålesund" },
-    { "n": 2,  "nome": "OUT FROM THE PIER",                            "lat_txt": "62°28.091' N", "lon_txt": "006°08.796' E", "raggio_nm": 0.00, "ap": null },
-    { "n": 3,  "nome": "NORTH OF SHALLOW WAZTER PATCH",                "lat_txt": "62°28.065' N", "lon_txt": "006°09.530' E", "raggio_nm": 0.25, "ap": null },
-    { "n": 4,  "nome": "SOUTH OF SHALLOW",                             "lat_txt": "62°27.926' N", "lon_txt": "006°10.397' E", "raggio_nm": 0.25, "ap": null },
-    { "n": 5,  "nome": "PURKA",                                        "lat_txt": "62°27.585' N", "lon_txt": "006°11.557' E", "raggio_nm": 0.25, "ap": null },
-    { "n": 6,  "nome": "SBE/RED MANNING",                              "lat_txt": "62°26.908' N", "lon_txt": "006°08.425' E", "raggio_nm": 1.00, "ap": null, "nota": "Stand By Engines — red manning" },
-    { "n": 7,  "nome": "ALESUND PORT LIMIT",                           "lat_txt": "62°26.791' N", "lon_txt": "006°05.458' E", "raggio_nm": 4.00, "ap": null, "nota": "Uscita dalle acque portuali di Ålesund" },
-    { "n": 8,  "nome": "breisundette/PILOT OFF",                       "lat_txt": "62°26.970' N", "lon_txt": "005°58.946' E", "raggio_nm": 4.00, "ap": null, "nota": "Sbarco pilota — Breisundet" },
-    { "n": 9,  "nome": "STORURA",                                      "lat_txt": "62°27.117' N", "lon_txt": "005°53.764' E", "raggio_nm": 4.00, "ap": null },
-    { "n": 10, "nome": "OUT OF FJORD",                                 "lat_txt": "62°32.267' N", "lon_txt": "005°35.731' E", "raggio_nm": 4.00, "ap": null },
-    { "n": 11, "nome": "4 NMS OUT",                                    "lat_txt": "62°23.332' N", "lon_txt": "005°08.106' E", "raggio_nm": 0.00, "ap": null },
-    { "n": 12, "nome": "12 NM OUT",                                    "lat_txt": "62°10.620' N", "lon_txt": "004°29.038' E", "raggio_nm": 0.00, "ap": null, "nota": "Fuori dalle 12 NM — inizio gamba esterna verso sud" },
-    { "n": 13, "nome": "TSS IN",                                       "lat_txt": "62°01.621' N", "lon_txt": "004°01.546' E", "raggio_nm": 4.00, "ap": null, "nota": "Ingresso nello schema di separazione del traffico" },
-    { "n": 14, "nome": "BEGLA",                                        "lat_txt": "61°02.060' N", "lon_txt": "004°00.745' E", "raggio_nm": 4.00, "ap": null },
-    { "n": 15, "nome": "OUTSIDE TSS",                                  "lat_txt": "60°20.534' N", "lon_txt": "004°21.824' E", "raggio_nm": 4.00, "ap": null, "nota": "Uscita dallo schema di separazione del traffico" },
-    { "n": 16, "nome": "12 NM IN",                                     "lat_txt": "59°35.023' N", "lon_txt": "004°34.588' E", "raggio_nm": 4.00, "ap": null, "nota": "Rientro entro le 12 NM" },
-    { "n": 17, "nome": "UTSIRA",                                       "lat_txt": "59°11.388' N", "lon_txt": "004°39.899' E", "raggio_nm": 4.00, "ap": null },
-    { "n": 18, "nome": "4 NM IN",                                      "lat_txt": "59°00.633' N", "lon_txt": "005°07.628' E", "raggio_nm": 4.00, "ap": null },
-    { "n": 19, "nome": "SKUDEFJORD PLT",                               "lat_txt": "59°06.133' N", "lon_txt": "005°25.826' E", "raggio_nm": 2.00, "ap": "AP", "nota": "Imbarco pilota — Kvitsøy Pilot VHF ch 13" },
-    { "n": 20, "nome": "SVEINA",                                       "lat_txt": "59°06.926' N", "lon_txt": "005°29.861' E", "raggio_nm": 1.50, "ap": null },
-    { "n": 21, "nome": "TERNEBOANE",                                   "lat_txt": "59°05.158' N", "lon_txt": "005°31.585' E", "raggio_nm": 2.00, "ap": null },
-    { "n": 22, "nome": "TUNGE",                                        "lat_txt": "59°02.447' N", "lon_txt": "005°36.021' E", "raggio_nm": 2.00, "ap": null },
-    { "n": 23, "nome": "SBE/THRUSTERS ON/SPEED LIMIT 10 KTS",          "lat_txt": "59°00.550' N", "lon_txt": "005°40.780' E", "raggio_nm": 2.00, "ap": "AP", "nota": "Subito dopo il WP: commit point, raggio 0.35 NM a sinistra" },
-    { "n": 24, "nome": "SPEED LIMIT 10 KTS",                           "lat_txt": "59°00.061' N", "lon_txt": "005°41.459' E", "raggio_nm": 0.00, "ap": null },
-    { "n": 25, "nome": "EGCS NOT ALLOWED/ONLY MGO +SCR /PORT LIMIT",   "lat_txt": "58°59.503' N", "lon_txt": "005°42.234' E", "raggio_nm": 0.00, "ap": null, "nota": "Port limit: da qui solo MGO + SCR" },
-    { "n": 26, "nome": "ULNESGRUNNEN",                                 "lat_txt": "58°59.191' N", "lon_txt": "005°42.668' E", "raggio_nm": 0.20, "ap": null },
-    { "n": 27, "nome": "Turning Basin",                                "lat_txt": "58°58.601' N", "lon_txt": "005°43.676' E", "raggio_nm": 0.00, "ap": null, "nota": "Bacino di evoluzione" },
-    { "n": 28, "nome": "STRANDKAIEN BERTH",                            "lat_txt": "58°58.489' N", "lon_txt": "005°43.548' E", "raggio_nm": 0.25, "ap": null, "nota": "Ormeggio lato sinistro, 6/2 prua e poppa" }
+    {
+      "n": 1,
+      "nome": "Storneskaien Pier",
+      "lat_txt": "62°28.149' N",
+      "lon_txt": "006°08.791' E",
+      "raggio_nm": 0.0,
+      "ap": null,
+      "nota": "Ormeggio di partenza — Storneskaia, Ålesund"
+    },
+    {
+      "n": 2,
+      "nome": "OUT FROM THE PIER",
+      "lat_txt": "62°28.091' N",
+      "lon_txt": "006°08.796' E",
+      "raggio_nm": 0.0,
+      "ap": null
+    },
+    {
+      "n": 3,
+      "nome": "NORTH OF SHALLOW WAZTER PATCH",
+      "lat_txt": "62°28.065' N",
+      "lon_txt": "006°09.530' E",
+      "raggio_nm": 0.25,
+      "ap": null
+    },
+    {
+      "n": 4,
+      "nome": "SOUTH OF SHALLOW",
+      "lat_txt": "62°27.926' N",
+      "lon_txt": "006°10.397' E",
+      "raggio_nm": 0.25,
+      "ap": null
+    },
+    {
+      "n": 5,
+      "nome": "PURKA",
+      "lat_txt": "62°27.585' N",
+      "lon_txt": "006°11.557' E",
+      "raggio_nm": 0.25,
+      "ap": null
+    },
+    {
+      "n": 6,
+      "nome": "SBE/RED MANNING",
+      "lat_txt": "62°26.908' N",
+      "lon_txt": "006°08.425' E",
+      "raggio_nm": 1.0,
+      "ap": null,
+      "nota": "Stand By Engines — red manning"
+    },
+    {
+      "n": 7,
+      "nome": "ALESUND PORT LIMIT",
+      "lat_txt": "62°26.791' N",
+      "lon_txt": "006°05.458' E",
+      "raggio_nm": 4.0,
+      "ap": null,
+      "nota": "Uscita dalle acque portuali di Ålesund"
+    },
+    {
+      "n": 8,
+      "nome": "breisundette/PILOT OFF",
+      "lat_txt": "62°26.970' N",
+      "lon_txt": "005°58.946' E",
+      "raggio_nm": 4.0,
+      "ap": null,
+      "nota": "Sbarco pilota — Breisundet"
+    },
+    {
+      "n": 9,
+      "nome": "STORURA",
+      "lat_txt": "62°27.117' N",
+      "lon_txt": "005°53.764' E",
+      "raggio_nm": 4.0,
+      "ap": null
+    },
+    {
+      "n": 10,
+      "nome": "OUT OF FJORD",
+      "lat_txt": "62°32.267' N",
+      "lon_txt": "005°35.731' E",
+      "raggio_nm": 4.0,
+      "ap": null
+    },
+    {
+      "n": 11,
+      "nome": "4 NMS OUT",
+      "lat_txt": "62°23.332' N",
+      "lon_txt": "005°08.106' E",
+      "raggio_nm": 0.0,
+      "ap": null
+    },
+    {
+      "n": 12,
+      "nome": "12 NM OUT",
+      "lat_txt": "62°10.620' N",
+      "lon_txt": "004°29.038' E",
+      "raggio_nm": 0.0,
+      "ap": null,
+      "nota": "Fuori dalle 12 NM — inizio gamba esterna verso sud"
+    },
+    {
+      "n": 13,
+      "nome": "TSS IN",
+      "lat_txt": "62°01.621' N",
+      "lon_txt": "004°01.546' E",
+      "raggio_nm": 4.0,
+      "ap": null,
+      "nota": "Ingresso nello schema di separazione del traffico"
+    },
+    {
+      "n": 14,
+      "nome": "BEGLA",
+      "lat_txt": "61°02.060' N",
+      "lon_txt": "004°00.745' E",
+      "raggio_nm": 4.0,
+      "ap": null
+    },
+    {
+      "n": 15,
+      "nome": "OUTSIDE TSS",
+      "lat_txt": "60°20.534' N",
+      "lon_txt": "004°21.824' E",
+      "raggio_nm": 4.0,
+      "ap": null,
+      "nota": "Uscita dallo schema di separazione del traffico"
+    },
+    {
+      "n": 16,
+      "nome": "12 NM IN",
+      "lat_txt": "59°35.023' N",
+      "lon_txt": "004°34.588' E",
+      "raggio_nm": 4.0,
+      "ap": null,
+      "nota": "Rientro entro le 12 NM"
+    },
+    {
+      "n": 17,
+      "nome": "UTSIRA",
+      "lat_txt": "59°11.388' N",
+      "lon_txt": "004°39.899' E",
+      "raggio_nm": 4.0,
+      "ap": null
+    },
+    {
+      "n": 18,
+      "nome": "4 NM IN",
+      "lat_txt": "59°00.633' N",
+      "lon_txt": "005°07.628' E",
+      "raggio_nm": 4.0,
+      "ap": null
+    },
+    {
+      "n": 19,
+      "nome": "SKUDEFJORD PLT",
+      "lat_txt": "59°06.133' N",
+      "lon_txt": "005°25.826' E",
+      "raggio_nm": 2.0,
+      "ap": "AP",
+      "nota": "Imbarco pilota — Kvitsøy Pilot VHF ch 13"
+    },
+    {
+      "n": 20,
+      "nome": "SVEINA",
+      "lat_txt": "59°06.926' N",
+      "lon_txt": "005°29.861' E",
+      "raggio_nm": 1.5,
+      "ap": null
+    },
+    {
+      "n": 21,
+      "nome": "TERNEBOANE",
+      "lat_txt": "59°05.158' N",
+      "lon_txt": "005°31.585' E",
+      "raggio_nm": 2.0,
+      "ap": null
+    },
+    {
+      "n": 22,
+      "nome": "TUNGE",
+      "lat_txt": "59°02.447' N",
+      "lon_txt": "005°36.021' E",
+      "raggio_nm": 2.0,
+      "ap": null
+    },
+    {
+      "n": 23,
+      "nome": "SBE/THRUSTERS ON/SPEED LIMIT 10 KTS",
+      "lat_txt": "59°00.550' N",
+      "lon_txt": "005°40.780' E",
+      "raggio_nm": 2.0,
+      "ap": "AP",
+      "nota": "Subito dopo il WP: commit point, raggio 0.35 NM a sinistra"
+    },
+    {
+      "n": 24,
+      "nome": "SPEED LIMIT 10 KTS",
+      "lat_txt": "59°00.061' N",
+      "lon_txt": "005°41.459' E",
+      "raggio_nm": 0.0,
+      "ap": null
+    },
+    {
+      "n": 25,
+      "nome": "EGCS NOT ALLOWED/ONLY MGO +SCR /PORT LIMIT",
+      "lat_txt": "58°59.503' N",
+      "lon_txt": "005°42.234' E",
+      "raggio_nm": 0.0,
+      "ap": null,
+      "nota": "Port limit: da qui solo MGO + SCR"
+    },
+    {
+      "n": 26,
+      "nome": "ULNESGRUNNEN",
+      "lat_txt": "58°59.191' N",
+      "lon_txt": "005°42.668' E",
+      "raggio_nm": 0.2,
+      "ap": null
+    },
+    {
+      "n": 27,
+      "nome": "Turning Basin",
+      "lat_txt": "58°58.601' N",
+      "lon_txt": "005°43.676' E",
+      "raggio_nm": 0.0,
+      "ap": null,
+      "nota": "Bacino di evoluzione"
+    },
+    {
+      "n": 28,
+      "nome": "STRANDKAIEN BERTH",
+      "lat_txt": "58°58.489' N",
+      "lon_txt": "005°43.548' E",
+      "raggio_nm": 0.25,
+      "ap": null,
+      "nota": "Ormeggio lato sinistro, 6/2 prua e poppa"
+    }
   ],
   "note": [
-    { "testo": "Presa guardia alle 04:00 con velocità 18 nodi, velocità 17.2.", "fonte": "C" },
-    { "testo": "Assetto macchina durante la guardia: 4 DDGG in moto (2 grandi + 2 piccoli) a 108 RPM. Dato specifico della nave, riportato qui come contesto del transito e non nella scheda porto.", "fonte": "C" },
-    { "testo": "Fuel Changeover iniziato alle 03:18, in anticipo sul port limit di Stavanger dove è ammesso solo MGO.", "fonte": "C" },
-    { "testo": "Vento prevalente durante la guardia: Sud 20 kn.", "fonte": "C" },
-    { "testo": "Ålesund — banchina di partenza Storneskaia: 354 m, ISPS, acqua ed energia da terra 400/440/690 V fino a 640 A.", "fonte": "W", "verificato": "2026-07-29" },
-    { "testo": "Ålesund — Havnevakta: mobile +47 958 83 400, presidiata 06:00–24:00; fuori orario reperibilità con tempo di risposta 30 minuti.", "fonte": "W", "verificato": "2026-07-29" },
-    { "testo": "Da ≈ WP19 (Skudefjord): area Kvitsøy VTS, settore Sud VHF ch 18; permesso richiesto per l'uso delle acque in entrata e in uscita.", "fonte": "CW", "verificato": "2026-07-29" },
-    { "testo": "Distanza totale non riportata nella tabella di bordo: il valore indicato è calcolato dalle coordinate dei waypoint per tratte lossodromiche.", "fonte": "P" }
+    {
+      "testo": "Assetto macchina durante la guardia: 4 DDGG in moto (2 grandi + 2 piccoli) a 108 RPM. Dato specifico della nave, riportato qui come contesto del transito e non nella scheda porto.",
+      "fonte": "C"
+    },
+    {
+      "testo": "Ålesund — banchina di partenza Storneskaia: 354 m, ISPS, acqua ed energia da terra 400/440/690 V fino a 640 A.",
+      "fonte": "W",
+      "verificato": "2026-07-29"
+    },
+    {
+      "testo": "Ålesund — Havnevakta: mobile +47 958 83 400, presidiata 06:00–24:00; fuori orario reperibilità con tempo di risposta 30 minuti.",
+      "fonte": "W",
+      "verificato": "2026-07-29"
+    },
+    {
+      "testo": "Distanza totale non riportata nella tabella di bordo: il valore indicato è calcolato dalle coordinate dei waypoint per tratte lossodromiche.",
+      "fonte": "P"
+    }
   ]
 }
